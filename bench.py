@@ -153,7 +153,7 @@ def generate_mazes_to_dir(cfg: Dict, outdir: Path, mode: str = 'text2d', count: 
     elif mode == 'image2d':
         h, w = map(int, (cfg.get('image2d', {}).get('size') or '10x10').split('x'))
         for i in tqdm(range(count), desc='GenOnly Image2D'):
-            gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, density=cfg.get('image2d', {}).get('density', 0.3), trap_ratio=cfg.get('image2d', {}).get('trap_ratio', 0.0), seed=i, cell_px=cfg.get('image2d', {}).get('cell_px', 24)))
+            gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24)))
             maze = gen.generate()
             img = gen.render_image(maze)
             img.save(outdir / f'image2d_maze_{h}x{w}_{i}.png')
