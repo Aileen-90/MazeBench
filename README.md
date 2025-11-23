@@ -38,7 +38,7 @@ Planned 3D maze benchmark:
 - Voxels-based 3D grid with start/goal on different floors
 - Rendering: simple orthographic slices + isometric projection images
 - Input: image stacks or short video; Output: textual path or command sequence
-- Parameters: obstacle density, trap ratio, corridor width, entrance/exit placement, dead-end frequency, loop bias
+- Parameters (structure-first, no density): corridor width, branch frequency, turn bias, loop bias, verticality ratio, entrance/exit placement, dead-end frequency, trap ratio
 - Evaluation: shortest-path validation, collision checks, step budget, time-to-solve
 - Adapters: extend current interface to pass video frames
 
