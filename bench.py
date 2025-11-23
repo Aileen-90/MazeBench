@@ -115,7 +115,7 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
     results = []
     img_paths = []
     for i in tqdm(range(n), desc='Image2D'):
-        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, density=0.3, trap_ratio=0.0, seed=i, cell_px=24))
+        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24)))
         maze = gen.generate()
         img = gen.render_image(maze)
         img_path = outdir / f"image2d_maze_{h}x{w}_{i}.png"
