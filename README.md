@@ -173,6 +173,32 @@ open MazeBench-2D-Image/examples/report_10x10_0.html
 图像 2D（多模态，独立运行）：
 ```
 pip install -r MazeBench-2D-Image/requirements.txt
+
+### 迷宫生成算法（可切换，易扩展）
+
+公共生成核心 common/maze_generator.py 提供算法注册与调度，当前内置：
+- dfs：步长为 2 的“挖墙式”回溯（stride-2 DFS），在偶数坐标格点上行走，并打通相邻格之间的墙，形成经典墙体+通道的迷宫（墙=1，路=0）。
+- prim：步长为 2 的随机 Prim 生长（stride-2 Prim），维护前沿集合，随机选择前沿并与已开通区域相连，同时打通中间墙格，保证生成树性质。
+
+选择方式：
+- 在 config/config.yaml 中设置 text2d.algorithm / image2d.algorithm（dfs 或 prim）
+- 或通过 CLI：
+  - Text2D: python MazeBench-2D/cli.py --algorithm dfs
+  - Image2D: python MazeBench-2D-Image/cli.py --algorithm prim
+
+扩展新算法：
+- 在 common/maze_generator.py 中新增 _apply_youralgo 与内部 carve 逻辑
+- 将标识注册到 algo_map，如 algo_map['youralgo'] = lambda: self._apply_youralgo(...)
+- Text2D 与 Image2D 会自动支持该算法（共享生成核心）
+
+可复现性与 AntiCheat：
+- 所有生成调用以 config 中 seed 为基准，生成输出中包含 nonce=seed，防作弊策略会读取此 nonce 作为扰动与沙盒的一致随机源
+- 相同参数与 seed 下，多次运行将得到完全一致的迷宫与最短路径
+
+参数对齐：
+- Text2D 与 Image2D 均接受 width/height/seed/start_goal/algorithm；Image2D 额外多一个 cell_px（像素尺寸）。
+- trap_ratio：两种模式均接受；Text2D 会在网格上注入陷阱区域并在验证中使用；Image2D 目前仅为参数对齐，占位未用于渲染与验证。
+
 ## 选择迷宫生成算法（DFS/Prim）
 
 两种算法均已内置于公共生成核心 common/maze_generator.py，并通过配置或 CLI 参数选择：
