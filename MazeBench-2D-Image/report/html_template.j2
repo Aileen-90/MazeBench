@@ -23,7 +23,7 @@
     <img src="%%IMG_SRC%%" alt="maze" style="image-rendering: pixelated; border:1px solid #ccc" />
   </div>
   <div class="card">
-    <h3>路径对比</h3>
+    <h3>路径对比（原点左上，x 为列，y 为行）</h3>
     <div id="pathplot"></div>
     <script>
       var sp = %%SP%%;
@@ -39,7 +39,7 @@
         {x: spxy[0], y: spxy[1], mode: 'lines+markers', name: 'Shortest', line: {color: '#1f77b4', width: 3}},
         {x: mpxy[0], y: mpxy[1], mode: 'lines+markers', name: 'Model', line: {color: '#ff7f0e', width: 3}}
       ];
-      Plotly.newPlot('pathplot', dataPath, {yaxis:{autorange:'reversed'}, legend: {orientation: 'h'}});
+      Plotly.newPlot('pathplot', dataPath, {xaxis:{title:'x (列)'}, yaxis:{title:'y (行)', autorange:'reversed'}, legend: {orientation: 'h'}});
     </script>
   </div>
 </div>
