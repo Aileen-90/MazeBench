@@ -4,16 +4,16 @@
 
 # Optionally override per benchmark below
 text2d:
-  size: '7x7'  # use odd×odd sizes for classic stride-2 wall mazes
+  size: '9x9'  # use odd×odd sizes for classic stride-2 wall mazes
   algorithm: prim  # dfs or prim
-  seed: 1  # base random seed for reproducibility
-  n: 3  # number of text mazes to run/generate
+  seed: 2  # base random seed for reproducibility
+  n: 5  # number of text mazes to run/generate
 
   workers: 4
   start_goal: corner  # corner or random
 image2d:
   algorithm: prim  # dfs or prim
-  seed: 1  # base random seed for reproducibility
+  seed: 2  # base random seed for reproducibility
 
   size: '9x9'  # use odd×odd sizes for classic stride-2 wall mazes
   n: 5
@@ -34,9 +34,8 @@ pre_generated_dir: ''
 count: 3
 # Chose which Model to use
 model: doubao-seed-1-6-251015
-# API keys (use local.yaml for real values)
-OPENAI_API_KEY: ''
-ANTHROPIC_API_KEY: ''
+# API keys: do NOT put secrets here. Use config/local.yaml or environment variables.
+# OPENAI_API_KEY and ANTHROPIC_API_KEY must be set in config/local.yaml (gitignored) or via env.
 
 
 # Optional OpenAI SDK-style vendor settings

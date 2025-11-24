@@ -1,8 +1,19 @@
 import json
 from pathlib import Path
 from typing import Dict
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except Exception:
+    class _NoTqdm:
+        def __init__(self, total=None, desc=None): pass
+        def update(self, n=1): pass
+        def close(self): pass
+    def tqdm(iterable=None, total=None, desc=None):
+        if iterable is not None:
+            return iterable
+        return _NoTqdm(total=total, desc=desc)
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from common.config_loader import load_config, apply_env_keys
 from common.pdf_export import export_summary_pdf
@@ -89,9 +100,9 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
     start_goal = (cfg.get('text2d', {}).get('start_goal') or 'corner')
     algorithm = (cfg.get('text2d', {}).get('algorithm') or 'dfs')
     base_seed = cfg.get('text2d', {}).get('seed') or 0
+    workers = int(cfg.get('text2d', {}).get('workers') or max(1, min(n, (os.cpu_count() or 4))))
 
-    results = []
-    for i in tqdm(range(n), desc='Text2D'):
+    def _task(i: int):
         cfg_m = TextMazeConfig(width=w, height=h, seed=base_seed + i, start_goal=start_goal, algorithm=algorithm)
         gen = TextMazeGenerator(cfg_m)
         maze = gen.generate()
@@ -111,7 +122,20 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
         failure_snapshot = '' if result.get('ok') else result.get('error', '')
         rpath = outdir / f"text2d_report_{model}_{h}x{w}_{i}.html"
         TextReport(str(rpath), maze, parsed.path, scores, failure_snapshot)
-        results.append({'scores': scores, 'report': str(rpath)})
+        return {'scores': scores, 'report': str(rpath)}
+
+    results = []
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futures = {ex.submit(_task, i): i for i in range(n)}
+        pbar = tqdm(total=n, desc='Text2D')
+        for fut in as_completed(futures):
+            try:
+                results.append(fut.result())
+            except Exception as e:
+                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+            pbar.update(1)
+        pbar.close()
+
     summary_path = outdir / 'text2d_summary.json'
     avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
     summary = {'avg_total': avg, 'items': results}
@@ -126,17 +150,16 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
     h, w = map(int, size.split('x'))
     n = int(cfg.get('image2d', {}).get('n') or 3)
     adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=True, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
+    workers = int(cfg.get('image2d', {}).get('workers') or max(1, min(n, (os.cpu_count() or 4))))
 
-    results = []
     img_paths = []
-    base_seed = cfg.get('image2d', {}).get('seed') or 0
-    for i in tqdm(range(n), desc='Image2D'):
-        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=base_seed+i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
+
+    def _task(i: int):
+        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=(cfg.get('image2d', {}).get('seed') or 0)+i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
         maze = gen.generate()
         img = gen.render_image(maze)
         img_path = outdir / f"image2d_maze_{h}x{w}_{i}.png"
         img.save(img_path)
-        img_paths.append(str(img_path))
         anti = ImgAntiCheat(seed=maze.get('nonce', 0))
         maze_p = anti.perturb_input(maze)
         prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {h}x{w}。原点在左上角，x 为列索引，y 为行索引。只输出[(r,c),...]，不要解释。"
@@ -150,7 +173,22 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
         fail = '' if vres.get('ok') else vres.get('error', '')
         rpath = outdir / f"image2d_report_{model}_{h}x{w}_{i}.html"
         ImgReport(str(rpath), maze, parsed.path, scores, fail, str(img_path))
-        results.append({'scores': scores, 'report': str(rpath)})
+        return {'scores': scores, 'report': str(rpath), 'img_path': str(img_path)}
+
+    results = []
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futures = {ex.submit(_task, i): i for i in range(n)}
+        pbar = tqdm(total=n, desc='Image2D')
+        for fut in as_completed(futures):
+            try:
+                r = fut.result()
+                results.append({'scores': r['scores'], 'report': r['report']})
+                img_paths.append(r['img_path'])
+            except Exception as e:
+                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+            pbar.update(1)
+        pbar.close()
+
     avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
     summary = {'avg_total': avg, 'items': results}
     (outdir / 'image2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -186,8 +224,11 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
     model = cfg.get('model', 'mock')
     if mode == 'text2d':
         adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=False, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
-        results = []
-        for idx, mp in enumerate(sorted(mazes_dir.glob('text2d_maze_*.json'))):
+        workers = int(cfg.get('text2d', {}).get('workers') or max(1, os.cpu_count() or 4))
+        items = list(sorted(mazes_dir.glob('text2d_maze_*.json')))
+
+        def _task(idx_mp):
+            idx, mp = idx_mp
             maze = json.loads(mp.read_text(encoding='utf-8'))
             anti = TextAntiCheat(seed=maze.get('nonce', 0))
             maze_p = anti.perturb_input(maze)
@@ -204,7 +245,19 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
             failure_snapshot = '' if vres.get('ok') else vres.get('error', '')
             rpath = outdir / f"text2d_report_{model}_{maze['height']}x{maze['width']}_{idx}.html"
             TextReport(str(rpath), maze, parsed.path, scores, failure_snapshot)
-            results.append({'maze': mp.name, 'scores': scores, 'report': str(rpath)})
+            return {'maze': mp.name, 'scores': scores, 'report': str(rpath)}
+
+        results = []
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = {ex.submit(_task, (idx, mp)): idx for idx, mp in enumerate(items)}
+            pbar = tqdm(total=len(items), desc='Eval Text2D')
+            for fut in as_completed(futures):
+                try:
+                    results.append(fut.result())
+                except Exception as e:
+                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                pbar.update(1)
+            pbar.close()
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
         summary = {'avg_total': avg, 'items': results}
         (outdir / 'text2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -212,13 +265,14 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
         return summary
     else:
         adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=True, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
-        results = []
-        img_paths = []
-        for idx, jp in enumerate(sorted(mazes_dir.glob('image2d_maze_*.json'))):
+        workers = int(cfg.get('image2d', {}).get('workers') or max(1, os.cpu_count() or 4))
+        items = list(sorted(mazes_dir.glob('image2d_maze_*.json')))
+
+        def _task(idx_jp):
+            idx, jp = idx_jp
             maze = json.loads(jp.read_text(encoding='utf-8'))
             base = jp.stem
             png = mazes_dir / (base + '.png')
-            img_paths.append(str(png))
             anti = ImgAntiCheat(seed=maze.get('nonce', 0))
             maze_p = anti.perturb_input(maze)
             prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {maze['height']}x{maze['width']}。原点在左上角，x 为列索引，y 为行索引。只输出[(r,c),...]，不要解释。"
@@ -231,11 +285,26 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
             fail = '' if vres.get('ok') else vres.get('error', '')
             rpath = outdir / f"image2d_report_{model}_{maze['height']}x{maze['width']}_{idx}.html"
             ImgReport(str(rpath), maze, parsed.path, scores, fail, str(png))
-            results.append({'maze': jp.name, 'scores': scores, 'report': str(rpath)})
+            return {'maze': jp.name, 'scores': scores, 'report': str(rpath)}
+
+        results = []
+        img_paths = []
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = {ex.submit(_task, (idx, jp)): idx for idx, jp in enumerate(items)}
+            pbar = tqdm(total=len(items), desc='Eval Image2D')
+            for fut in as_completed(futures):
+                try:
+                    r = fut.result()
+                    results.append({'maze': r['maze'], 'scores': r['scores'], 'report': r['report']})
+                    # Can't know image path here without jp; skip accumulating images in summary
+                except Exception as e:
+                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                pbar.update(1)
+            pbar.close()
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
         summary = {'avg_total': avg, 'items': results}
         (outdir / 'image2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
-        export_summary_pdf(str(outdir / 'image2d_summary.pdf'), 'Image2D Summary', summary, image_paths=img_paths)
+        export_summary_pdf(str(outdir / 'image2d_summary.pdf'), 'Image2D Summary', summary, image_paths=None)
         return summary
 
 
