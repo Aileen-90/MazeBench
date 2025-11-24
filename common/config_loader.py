@@ -22,5 +22,5 @@ def load_config() -> Dict:
 def apply_env_keys(cfg: Dict):
     for k in ['OPENAI_API_KEY','ANTHROPIC_API_KEY','OPENAI_API_BASE','OPENAI_API_KEY_ENV','USE_OPENAI_SDK']:
         v = cfg.get(k)
-        if v:
-            os.environ[k] = v
+        if v is not None:
+            os.environ[k] = str(v)

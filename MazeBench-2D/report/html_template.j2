@@ -28,22 +28,17 @@
 
   <div class="grid">
     <div class="card">
-      <h3>热力图</h3>
-      <div id="heatmap"></div>
-      <script>
-        var grid = %%GRID%%;
-        var z = grid.map(row => row.map(v => v==1?10:0));
-        var dataHeat = [{z: z, type: 'heatmap'}];
-        Plotly.newPlot('heatmap', dataHeat, {});
-      </script>
+      <h3>迷宫原图</h3>
+      <img src="%%IMG_SRC%%" alt="maze" style="image-rendering: pixelated; border:1px solid #ccc" />
     </div>
     <div class="card">
-      <h3>路径对比</h3>
+      <h3>路径对比（原点左上，x 为列，y 为行）</h3>
       <div id="pathplot"></div>
       <script>
         var sp = %%SP%%;
         var mp = %%MP%%;
         function toXY(path){
+          // 原点在左上角，x 为列索引 (c)，y 为行索引 (r)
           var xs = path.map(p=>p[1]);
           var ys = path.map(p=>p[0]);
           return [xs, ys];
@@ -51,10 +46,10 @@
         var spxy = toXY(sp);
         var mpxy = toXY(mp);
         var dataPath = [
-          {x: spxy[0], y: spxy[1], mode: 'lines+markers', name: 'Shortest'},
-          {x: mpxy[0], y: mpxy[1], mode: 'lines+markers', name: 'Model'}
+          {x: spxy[0], y: spxy[1], mode: 'lines+markers', name: 'Shortest', line: {color: '#1f77b4', width: 3}},
+          {x: mpxy[0], y: mpxy[1], mode: 'lines+markers', name: 'Model', line: {color: '#ff7f0e', width: 3}}
         ];
-        Plotly.newPlot('pathplot', dataPath, {yaxis:{autorange:'reversed'}});
+        Plotly.newPlot('pathplot', dataPath, {yaxis:{autorange:'reversed'}, xaxis:{title:'x (列)'}, yaxis:{title:'y (行)'}, legend: {orientation: 'h'}});
       </script>
     </div>
   </div>

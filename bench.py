@@ -94,8 +94,8 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
         anti = TextAntiCheat(seed=maze.get('nonce', 0))
         maze_p = anti.perturb_input(maze)
         prompt = (
-            f"迷宫大小 {len(maze_p['grid'])}x{len(maze_p['grid'][0])}. 起点{maze_p['start']}, 终点{maze_p['goal']}. "
-            f"请输出纯坐标路径列表，如 [(0,0),(0,1),...]. 禁止解释。"
+            f"迷宫大小 {len(maze_p['grid'])}x{len(maze_p['grid'][0])}。原点在左上角，x 为列索引，y 为行索引。起点{maze_p['start']}，终点{maze_p['goal']}。"
+            f"请只输出坐标路径列表，如 [(r0,c0),(r1,c1),...]，不要解释。"
         )
         text = adapter.generate(prompt)
         text = anti.sandbox_output(text)
@@ -135,7 +135,7 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
         img_paths.append(str(img_path))
         anti = ImgAntiCheat(seed=maze.get('nonce', 0))
         maze_p = anti.perturb_input(maze)
-        prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {h}x{w}。只输出[(r,c),...]，不要解释。"
+        prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {h}x{w}。原点在左上角，x 为列索引，y 为行索引。只输出[(r,c),...]，不要解释。"
         text = adapter.generate(prompt, image_path=str(img_path))
         text = anti.sandbox_output(text)
         parser = ImgParser()
@@ -183,13 +183,13 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
     if mode == 'text2d':
         adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=False, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
         results = []
-        for mp in sorted(mazes_dir.glob('text2d_maze_*.json')):
+        for idx, mp in enumerate(sorted(mazes_dir.glob('text2d_maze_*.json'))):
             maze = json.loads(mp.read_text(encoding='utf-8'))
             anti = TextAntiCheat(seed=maze.get('nonce', 0))
             maze_p = anti.perturb_input(maze)
             prompt = (
-                f"迷宫大小 {len(maze_p['grid'])}x{len(maze_p['grid'][0])}. 起点{maze_p['start']}, 终点{maze_p['goal']}. "
-                f"请输出纯坐标路径列表，如 [(0,0),(0,1),...]. 禁止解释。"
+                f"迷宫大小 {len(maze_p['grid'])}x{len(maze_p['grid'][0])}。原点在左上角，x 为列索引，y 为行索引。起点{maze_p['start']}，终点{maze_p['goal']}。"
+                f"请只输出坐标路径列表，如 [(r0,c0),(r1,c1),...]，不要解释。"
             )
             text = adapter.generate(prompt)
             text = anti.sandbox_output(text)
@@ -197,31 +197,37 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
             v = TextValidator(maze['grid'], maze['start'], maze['goal'], maze.get('trap_zones', []), maze['shortest_path'])
             vres = v.validate(parsed.path)
             scores = TextMetrics(size=max(maze['height'], maze['width'])).score(vres)
-            results.append({'maze': mp.name, 'scores': scores})
+            failure_snapshot = '' if vres.get('ok') else vres.get('error', '')
+            rpath = outdir / f"text2d_report_{model}_{maze['height']}x{maze['width']}_{idx}.html"
+            TextReport(str(rpath), maze, parsed.path, scores, failure_snapshot)
+            results.append({'maze': mp.name, 'scores': scores, 'report': str(rpath)})
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
         summary = {'avg_total': avg, 'items': results}
         (outdir / 'text2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
-        export_summary_pdf(str(outdir / 'text2d_summary.pdf'), 'Text2D Summary', summary)
+        export_summary_pdf(str(outdir / 'text2d_summary.pdf'), 'Text2D Summary', summary, image_paths=None)
         return summary
     else:
         adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=True, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
         results = []
         img_paths = []
-        for jp in sorted(mazes_dir.glob('image2d_maze_*.json')):
+        for idx, jp in enumerate(sorted(mazes_dir.glob('image2d_maze_*.json'))):
             maze = json.loads(jp.read_text(encoding='utf-8'))
             base = jp.stem
             png = mazes_dir / (base + '.png')
             img_paths.append(str(png))
             anti = ImgAntiCheat(seed=maze.get('nonce', 0))
             maze_p = anti.perturb_input(maze)
-            prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {maze['height']}x{maze['width']}。只输出[(r,c),...]，不要解释。"
+            prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表。迷宫尺寸为 {maze['height']}x{maze['width']}。原点在左上角，x 为列索引，y 为行索引。只输出[(r,c),...]，不要解释。"
             text = adapter.generate(prompt, image_path=str(png))
             text = anti.sandbox_output(text)
             parsed = ImgParser().parse_with_fallback(text, adapter=None)
             v = ImgValidator(maze['grid'], maze['start'], maze['goal'], maze['shortest_path'])
             vres = v.validate(parsed.path)
             scores = ImgMetrics().score(vres)
-            results.append({'maze': jp.name, 'scores': scores})
+            fail = '' if vres.get('ok') else vres.get('error', '')
+            rpath = outdir / f"image2d_report_{model}_{maze['height']}x{maze['width']}_{idx}.html"
+            ImgReport(str(rpath), maze, parsed.path, scores, fail, str(png))
+            results.append({'maze': jp.name, 'scores': scores, 'report': str(rpath)})
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
         summary = {'avg_total': avg, 'items': results}
         (outdir / 'image2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -236,7 +242,8 @@ def main():
     outdir.mkdir(parents=True, exist_ok=True)
     # Optional generate-only
     gen_only = cfg.get('generate_only', False)
-    preg_dir = cfg.get('pre_generated_dir')
+    use_pregen = cfg.get('use_pregenerated', False)
+    preg_dir = cfg.get('pre_generated_dir') or ''
     mode = cfg.get('mode')  # text2d/image2d/all
     count = int(cfg.get('count') or cfg.get('image2d', {}).get('n') or 3)
     if gen_only:
@@ -248,17 +255,24 @@ def main():
         print('Generate-only complete at', outdir)
         return
     # Optional evaluation from pre-generated assets
-    if preg_dir:
-        m = mode or 'image2d'
-        if m == 'text2d':
-            text_summary = eval_from_pregenerated(cfg, Path(preg_dir), outdir, mode='text2d')
-            img_summary = {'avg_total': 0}
-        elif m == 'image2d':
-            img_summary = eval_from_pregenerated(cfg, Path(preg_dir), outdir, mode='image2d')
-            text_summary = {'avg_total': 0}
+    if use_pregen:
+        # Auto resolve pre-generated directory
+        m = mode or 'all'
+        base_dir = Path(preg_dir) if preg_dir else outdir
+        if m in ('text2d','all'):
+            tdir = base_dir / 'mazes_text2d'
+            if not tdir.exists():
+                generate_mazes_to_dir(cfg, tdir, 'text2d', count=count)
+            text_summary = eval_from_pregenerated(cfg, tdir, outdir, mode='text2d')
         else:
-            text_summary = eval_from_pregenerated(cfg, Path(preg_dir), outdir, mode='text2d')
-            img_summary = eval_from_pregenerated(cfg, Path(preg_dir), outdir, mode='image2d')
+            text_summary = {'avg_total': 0}
+        if m in ('image2d','all'):
+            idir = base_dir / 'mazes_image2d'
+            if not idir.exists():
+                generate_mazes_to_dir(cfg, idir, 'image2d', count=count)
+            img_summary = eval_from_pregenerated(cfg, idir, outdir, mode='image2d')
+        else:
+            img_summary = {'avg_total': 0}
     else:
         print('Running MazeBenchmark with model', cfg.get('model'))
         text_summary = run_text2d(cfg, outdir)
