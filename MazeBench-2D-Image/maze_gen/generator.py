@@ -27,18 +27,27 @@ class MazeGenerator:
     def render_image(self, maze: Dict) -> Image.Image:
         cell = self.cfg.cell_px
         h, w = maze['height'], maze['width']
-        img = Image.new('RGB', (w*cell, h*cell), (255,255,255))
+        # Add a 1-cell border on all four sides to visualize enclosing walls without changing maze coordinates
+        H, W = h + 2, w + 2
+        img = Image.new('RGB', (W*cell, H*cell), (255,255,255))
         draw = ImageDraw.Draw(img)
+        # Draw outer border as solid walls
+        draw.rectangle([0, 0, W*cell-1, cell-1], fill=(0,0,0))              # top
+        draw.rectangle([0, (H-1)*cell, W*cell-1, H*cell-1], fill=(0,0,0))   # bottom
+        draw.rectangle([0, 0, cell-1, H*cell-1], fill=(0,0,0))              # left
+        draw.rectangle([ (W-1)*cell, 0, W*cell-1, H*cell-1], fill=(0,0,0))  # right
+        # Draw maze cells offset by +1 to account for the border
         for r in range(h):
             for c in range(w):
-                x0, y0 = c*cell, r*cell
+                x0, y0 = (c+1)*cell, (r+1)*cell
                 x1, y1 = x0+cell-1, y0+cell-1
                 if maze['grid'][r][c] == 1:
                     draw.rectangle([x0, y0, x1, y1], fill=(0,0,0))
                 else:
                     draw.rectangle([x0, y0, x1, y1], outline=(200,200,200))
-        sx, sy = maze['start'][1]*cell, maze['start'][0]*cell
-        gx, gy = maze['goal'][1]*cell, maze['goal'][0]*cell
+        # Start/goal markers also offset by +1 cell, coordinates remain unchanged elsewhere
+        sx, sy = (maze['start'][1]+1)*cell, (maze['start'][0]+1)*cell
+        gx, gy = (maze['goal'][1]+1)*cell, (maze['goal'][0]+1)*cell
         draw.rectangle([sx+2, sy+2, sx+cell-3, sy+cell-3], fill=(0,255,0))
         draw.rectangle([gx+2, gy+2, gx+cell-3, gy+cell-3], fill=(255,0,0))
         return img

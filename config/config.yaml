@@ -15,10 +15,10 @@ image2d:
   algorithm: dfs  # dfs or prim
   seed: 123  # base random seed for reproducibility
 
-  size: '50x50'
+  size: '10x10'
   n: 5
   trap_ratio: 0.0
-  cell_px: 24
+  cell_px: 24  # each cell pixel size; final image has a 1-cell border => (n+2) x (n+2) cells
   start_goal: corner  # corner or random
 output_dir: outputs
 
