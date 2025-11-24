@@ -188,7 +188,7 @@ pip install -r MazeBench-2D-Image/requirements.txt
 
 扩展新算法：
 - 在 common/maze_generator.py 中新增 _apply_youralgo 与内部 carve 逻辑
-- 将标识注册到 algo_map，如 algo_map['youralgo'] = lambda: self._apply_youralgo(...)
+- 通过 CommonMazeGenerator.register_algo('youralgo', handler) 注册到算法表（handler 接口：handler(grid, start, goal)）
 - Text2D 与 Image2D 会自动支持该算法（共享生成核心）
 
 可复现性与 AntiCheat：
