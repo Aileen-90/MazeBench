@@ -70,6 +70,7 @@ def main():
     parser.add_argument('--size', default='10x10')
     parser.add_argument('--n', type=int, default=3)
     parser.add_argument('--cell_px', type=int, default=24)
+    parser.add_argument('--trap_ratio', type=float, default=0.0)
     parser.add_argument('--start_goal', choices=['corner','random'], default='corner')
     parser.add_argument('--algorithm', choices=['dfs','prim'], default='dfs')
     parser.add_argument('--seed', type=int, default=None)
@@ -80,7 +81,7 @@ def main():
     results = []
     for i in tqdm(range(rcfg.n)):
         # pass start_goal via generator config
-        gen = MazeGenerator(MazeConfig(width=rcfg.width, height=rcfg.height, seed=(rcfg.seed or 0)+i, cell_px=rcfg.cell_px, start_goal=args.start_goal, algorithm=args.algorithm))
+        gen = MazeGenerator(MazeConfig(width=rcfg.width, height=rcfg.height, seed=(rcfg.seed or 0)+i, trap_ratio=args.trap_ratio, cell_px=rcfg.cell_px, start_goal=args.start_goal, algorithm=args.algorithm))
         maze = gen.generate()
         img = gen.render_image(maze)
         out_dir = Path(rcfg.out_dir)
