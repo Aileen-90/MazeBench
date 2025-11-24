@@ -199,6 +199,10 @@ pip install -r MazeBench-2D-Image/requirements.txt
 - Text2D 与 Image2D 均接受 width/height/seed/start_goal/algorithm；Image2D 额外多一个 cell_px（像素尺寸）。
 - trap_ratio：两种模式均接受；Text2D 会在网格上注入陷阱区域并在验证中使用；Image2D 目前仅为参数对齐，占位未用于渲染与验证。
 
+- 批量数量 n：
+  - text2d.n：生成/评估多份文本迷宫（基于 seed 采用 base_seed+i 递增）
+  - image2d.n：生成/评估多份图像迷宫（同样采用 base_seed+i 递增）
+
 ## 选择迷宫生成算法（DFS/Prim）
 
 两种算法均已内置于公共生成核心 common/maze_generator.py，并通过配置或 CLI 参数选择：
