@@ -62,14 +62,17 @@ ImgAntiCheat = _img_anticheat.AntiCheat
 
 
 def get_adapter(model: str, openai_key: str | None, image: bool = False, openai_base: str | None = None, openai_key_env: str | None = None, use_sdk: bool | None = None) -> object:
-    if model.startswith('mock') or not openai_key:
+    if model.startswith('mock'):
         return ImgMockAdapter(model=model) if image else TextMockAdapter(model=model)
-    # Allow custom base URL, env var name for key, and SDK toggle
+    # Resolve API key: explicit > custom env var > default OPENAI_API_KEY
+    env_key = os.getenv(openai_key_env) if openai_key_env else os.getenv('OPENAI_API_KEY')
+    resolved_key = openai_key or env_key or ''
+    if not resolved_key:
+        return ImgMockAdapter(model=model) if image else TextMockAdapter(model='mock-'+model)
     base = openai_base or os.getenv('OPENAI_API_BASE') or 'https://api.openai.com/v1'
-    key_env = openai_key_env or None
-    sdk = use_sdk if use_sdk is not None else (os.getenv('USE_OPENAI_SDK') == '1')
-    return (ImgOpenAIAdapter(model=model, api_base=base, api_key=openai_key, api_key_env=key_env, use_sdk=sdk)
-            if image else TextOpenAIAdapter(model=model, api_base=base, api_key=openai_key, api_key_env=key_env, use_sdk=sdk))
+    sdk = use_sdk if use_sdk is not None else (os.getenv('USE_OPENAI_SDK') in ('1','true','True'))
+    return (ImgOpenAIAdapter(model=model, api_base=base, api_key=resolved_key, api_key_env=openai_key_env, use_sdk=sdk)
+            if image else TextOpenAIAdapter(model=model, api_base=base, api_key=resolved_key, api_key_env=openai_key_env, use_sdk=sdk))
 
 
 def run_text2d(cfg: Dict, outdir: Path) -> Dict:
