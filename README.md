@@ -84,6 +84,48 @@ python bench.py
 ```
 
 所有输出将统一写入 outputs/：
+### 使用 Conda 配置运行环境（可选）
+如果你倾向于使用 Conda 进行隔离环境管理，可参考以下步骤：
+
+- 创建并激活环境（Python 3.10+ 建议使用 3.11/3.12）
+```
+conda create -n mazebench python=3.11 -y
+conda activate mazebench
+```
+
+- 安装依赖（顶层统一运行推荐）
+```
+pip install -r requirements.txt
+```
+
+- 独立运行 Text2D 或 Image2D（如需）
+```
+# Text2D 仅需 requests
+pip install -r MazeBench-2D/requirements.txt
+
+# Image2D 仅需 requests（核心依赖已在顶层 requirements 安装）
+pip install -r MazeBench-2D-Image/requirements.txt
+```
+
+- 运行
+```
+# 统一入口
+python bench.py
+
+# 或者分别：
+python MazeBench-2D/cli.py --size 10x10 --algorithm dfs
+python MazeBench-2D-Image/cli.py --size 10x10 --algorithm prim
+```
+
+- 退出环境
+```
+conda deactivate
+```
+
+备注：
+- 部分环境在安装 Pillow 或 reportlab 时可能触发编译或下载较慢，建议优先使用官方 Conda Python 版本以及国内镜像源（如通过 pip config 设置 index-url）。
+- 若安装受限，可先使用 --model mock 进行离线验证，或仅执行生成（generate_only）。
+
 - text2d_summary.json / text2d_summary.pdf / text2d_report_*.html
 - image2d_summary.json / image2d_summary.pdf / image2d_report_*.html / image2d_maze_*.png
 
