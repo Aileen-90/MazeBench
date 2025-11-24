@@ -22,7 +22,7 @@ def export_summary_pdf(output_path: str, title: str, summary: Dict, image_paths:
         y -= 0.8*cm
         for i, it in enumerate(items[:20]):
             s = it.get('scores', {})
-            p.drawString(2*cm, y, f"[{i}] total={s.get('total')} S={s.get('S')} Q={s.get('Q')} O={s.get('O')} R={s.get('R')} A={s.get('A')}")
+            p.drawString(2*cm, y, f"[{i}] total={s.get('total')} S={s.get('S')} Q={s.get('Q')} O={s.get('O')} A={s.get('A')} (W_S={s.get('W_S')} W_Q={s.get('W_Q')} W_O={s.get('W_O')} W_A={s.get('W_A')})")
             y -= 0.6*cm
             if y < 4*cm:
                 p.showPage()

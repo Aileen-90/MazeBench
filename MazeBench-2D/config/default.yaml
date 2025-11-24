@@ -6,6 +6,6 @@ runtime:
   workers: 4
   timeout_sec: 8
 weights:
-  small: {S: 0.35, Q: 0.25, O: 0.1, R: 0.15, A: 0.15}
-  medium: {S: 0.3, Q: 0.25, O: 0.1, R: 0.2, A: 0.15}
-  large: {S: 0.25, Q: 0.25, O: 0.1, R: 0.25, A: 0.15}
+  small: {S: 0.50, Q: 0.25, O: 0.23, A: 0.02}
+  medium: {S: 0.45, Q: 0.30, O: 0.23, A: 0.02}
+  large: {S: 0.40, Q: 0.35, O: 0.23, A: 0.02}

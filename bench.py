@@ -132,7 +132,7 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
             try:
                 results.append(fut.result())
             except Exception as e:
-                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'A': 0}, 'report': '', 'error': str(e)})
             pbar.update(1)
         pbar.close()
 
@@ -185,7 +185,7 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
                 results.append({'scores': r['scores'], 'report': r['report']})
                 img_paths.append(r['img_path'])
             except Exception as e:
-                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                results.append({'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'A': 0}, 'report': '', 'error': str(e)})
             pbar.update(1)
         pbar.close()
 
@@ -255,7 +255,7 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
                 try:
                     results.append(fut.result())
                 except Exception as e:
-                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'A': 0}, 'report': '', 'error': str(e)})
                 pbar.update(1)
             pbar.close()
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
@@ -298,7 +298,7 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
                     results.append({'maze': r['maze'], 'scores': r['scores'], 'report': r['report']})
                     # Can't know image path here without jp; skip accumulating images in summary
                 except Exception as e:
-                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'R': 0, 'A': 0}, 'report': '', 'error': str(e)})
+                    results.append({'maze': '', 'scores': {'total': 0, 'S': 0, 'Q': 0, 'O': 0, 'A': 0}, 'report': '', 'error': str(e)})
                 pbar.update(1)
             pbar.close()
         avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0

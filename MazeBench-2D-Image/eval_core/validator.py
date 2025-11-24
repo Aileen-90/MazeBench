@@ -9,37 +9,37 @@ class Validator:
         self.goal = goal
         self.shortest = shortest_path
 
-    def _neighbors(self, r: int, c: int):
-        h, w = len(self.grid), len(self.grid[0])
-        for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
-            nr, nc = r+dr, c+dc
-            if 0 <= nr < h and 0 <= nc < w and self.grid[nr][nc] == 0:
-                yield (nr, nc)
-
     def validate(self, path: List[Coord]) -> Dict:
+        # Compute overlap (F1) regardless of validity
+        overlap = self._overlap_f1(path)
+        # Validity checks
         if not path:
-            return {'ok': False, 'error': 'empty_path'}
+            return {'ok': False, 'error': 'empty_path', 'overlap': overlap}
         if path[0] != self.start:
-            return {'ok': False, 'error': 'bad_start'}
+            return {'ok': False, 'error': 'bad_start', 'overlap': overlap}
         seen = set([path[0]])
         for i in range(1, len(path)):
             r0,c0 = path[i-1]
             r1,c1 = path[i]
             if abs(r0-r1) + abs(c0-c1) != 1:
-                return {'ok': False, 'error': 'non_step'}
+                return {'ok': False, 'error': 'non_step', 'overlap': overlap}
             if self.grid[r1][c1] == 1:
-                return {'ok': False, 'error': 'hit_wall'}
+                return {'ok': False, 'error': 'hit_wall', 'overlap': overlap}
             if (r1,c1) in seen:
-                return {'ok': False, 'error': 'loop'}
+                return {'ok': False, 'error': 'loop', 'overlap': overlap}
             seen.add((r1,c1))
         if path[-1] != self.goal:
-            return {'ok': False, 'error': 'bad_goal'}
+            return {'ok': False, 'error': 'bad_goal', 'overlap': overlap}
         optimal = int(len(path) == len(self.shortest))
-        # overlap
+        return {'ok': True, 'optimal': optimal, 'overlap': overlap}
+
+    def _overlap_f1(self, path: List[Coord]) -> float:
+        if not path or not self.shortest:
+            return 0.0
         sp = set(tuple(p) for p in self.shortest)
         inter = sum(1 for p in path if tuple(p) in sp)
-        union = len(sp.union(set(tuple(p) for p in path)))
-        overlap = (inter/union) if union else 0.0
-        # simple robustness: check that small deviations still lead to a valid neighbor
-        robust = 1 if any((nr,nc) in sp for r,c in path[1:-1] for nr,nc in self._neighbors(r,c)) else 0
-        return {'ok': True, 'optimal': optimal, 'overlap': overlap, 'robust': robust}
+        if inter == 0:
+            return 0.0
+        precision = inter / len(path)
+        recall = inter / len(sp)
+        return (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0

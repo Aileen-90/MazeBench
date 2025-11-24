@@ -4,18 +4,18 @@
 
 # Optionally override per benchmark below
 text2d:
-  size: '9x9'  # use odd×odd sizes for classic stride-2 wall mazes
-  algorithm: prim  # dfs or prim
+  size: '5x5'  # use odd×odd sizes for classic stride-2 wall mazes
+  algorithm: dfs  # dfs or prim
   seed: 2  # base random seed for reproducibility
   n: 5  # number of text mazes to run/generate
 
   workers: 4
   start_goal: corner  # corner or random
 image2d:
-  algorithm: prim  # dfs or prim
+  algorithm: dfs  # dfs or prim
   seed: 2  # base random seed for reproducibility
 
-  size: '9x9'  # use odd×odd sizes for classic stride-2 wall mazes
+  size: '5x5'  # use odd×odd sizes for classic stride-2 wall mazes
   n: 5
   cell_px: 24  # pixel size per cell; final image equals maze grid (no outer border)
   start_goal: corner  # corner or random

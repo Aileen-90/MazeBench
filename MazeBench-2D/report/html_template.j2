@@ -18,8 +18,8 @@
   <script>
     var data = [{
       type: 'scatterpolar',
-      r: [%%S%%, %%Q%%, %%O%%, %%R%%, %%A%%],
-      theta: ['S','Q','O','R','A'],
+      r: [%%S%%, %%Q%%, %%O%%, %%A%%],
+      theta: ['S','Q','O','A'],
       fill: 'toself'
     }];
     var layout = {polar: {radialaxis: {visible: true, range: [0,1]}}, showlegend: false};
@@ -53,6 +53,10 @@
       </script>
     </div>
   </div>
+
+  <div class="card">
+    <h3>权重与得分</h3>
+    <pre>W_S=%%W_S%% W_Q=%%W_Q%% W_O=%%W_O%% W_A=%%W_A%%\nS=%%S%% Q=%%Q%% O=%%O%% A=%%A%%\nTotal=%%TOTAL%%</pre>
 
   <div class="card">
     <h3>典型失败案例</h3>
