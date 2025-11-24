@@ -120,7 +120,7 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
     img_paths = []
     base_seed = cfg.get('image2d', {}).get('seed') or 0
     for i in tqdm(range(n), desc='Image2D'):
-        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=base_seed+i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
+        gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=base_seed+i, trap_ratio=float(cfg.get('image2d', {}).get('trap_ratio') or 0.0), cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
         maze = gen.generate()
         img = gen.render_image(maze)
         img_path = outdir / f"image2d_maze_{h}x{w}_{i}.png"
@@ -163,7 +163,7 @@ def generate_mazes_to_dir(cfg: Dict, outdir: Path, mode: str = 'text2d', count: 
         h, w = map(int, (cfg.get('image2d', {}).get('size') or '10x10').split('x'))
         base_seed = cfg.get('image2d', {}).get('seed') or 0
         for i in tqdm(range(count), desc='GenOnly Image2D'):
-            gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=base_seed+i, cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
+            gen = ImgMazeGenerator(ImgMazeConfig(width=w, height=h, seed=base_seed+i, trap_ratio=float(cfg.get('image2d', {}).get('trap_ratio') or 0.0), cell_px=int(cfg.get('image2d', {}).get('cell_px') or 24), start_goal=(cfg.get('image2d', {}).get('start_goal') or 'corner'), algorithm=(cfg.get('image2d', {}).get('algorithm') or 'dfs')))
             maze = gen.generate()
             img = gen.render_image(maze)
             img.save(outdir / f'image2d_maze_{h}x{w}_{i}.png')

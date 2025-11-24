@@ -50,59 +50,50 @@ class CommonMazeGenerator:
             cur = prev[cur]
         return list(reversed(path))
 
-    # ====== NEW DFS IMPLEMENTATION (standard recursive backtracker) ======
-    def _dfs_standard(self, grid: np.ndarray) -> None:
+    # ====== DFS MAZE (stride-2 recursive backtracker to create walls) ======
+    def _dfs_maze(self, grid: np.ndarray) -> None:
         h, w = grid.shape
-        # We work in cell-based space: treat every cell as traversable unit.
-        # To avoid 2x2 walls and ensure connectivity, we use standard DFS over all cells.
         visited = np.zeros((h, w), dtype=bool)
         stack: List[Coord] = []
-        
-        # Start from (0,0)
+        # Use stride-2 over lattice so that intermediate cells act as walls
         start_r, start_c = 0, 0
         stack.append((start_r, start_c))
         grid[start_r, start_c] = 0
         visited[start_r, start_c] = True
-
-        directions = [(1,0), (-1,0), (0,1), (0,-1)]
-
+        directions = [(2,0), (-2,0), (0,2), (0,-2)]
         while stack:
             r, c = stack[-1]
-            # Get unvisited neighbors
             unvisited = []
             for dr, dc in directions:
                 nr, nc = r + dr, c + dc
-                if self._in_bounds(nr, nc, grid) and not visited[nr, nc]:
-                    unvisited.append((nr, nc))
-            
+                if 0 <= nr < h and 0 <= nc < w and not visited[nr, nc]:
+                    unvisited.append((nr, nc, dr, dc))
             if unvisited:
-                # Randomly pick one
-                nxt = unvisited[int(self.rng.integers(0, len(unvisited)))]
-                nr, nc = nxt
-                # Carve the cell (note: no wall between in cell-based; all cells are path)
+                idx = int(self.rng.integers(0, len(unvisited)))
+                nr, nc, dr, dc = unvisited[idx]
+                # Carve passage to neighbor and the wall between
+                grid[r + dr//2, c + dc//2] = 0
                 grid[nr, nc] = 0
                 visited[nr, nc] = True
                 stack.append((nr, nc))
             else:
-                # Backtrack
                 stack.pop()
 
     def _apply_dfs(self, grid: np.ndarray, start: Coord, goal: Coord) -> None:
-        # 🔑 KEY FIX: Use standard DFS that carves ALL cells.
-        # Clear grid to all walls, then carve entire spanning tree.
-        grid.fill(1)  # all walls initially
-        self._dfs_standard(grid)
-        # Ensure start and goal are open (they should be, but double-check)
+        # Clear grid to walls and carve using stride-2 DFS
+        grid.fill(1)
+        self._dfs_maze(grid)
         grid[start] = 0
         grid[goal] = 0
 
     def _carve_prim_tree(self, grid: np.ndarray, start: Coord) -> None:
-        # Keep original Prim for compatibility (optional)
+        # Stride-2 Prim: cells on a lattice with step=2, carve intermediate walls
         carved: Set[Coord] = set()
         grid[start] = 0
         carved.add(start)
         frontier: Set[Coord] = set()
-        for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+        directions = [(2,0),(-2,0),(0,2),(0,-2)]
+        for dr, dc in directions:
             nr, nc = start[0]+dr, start[1]+dc
             if self._in_bounds(nr, nc, grid):
                 frontier.add((nr, nc))
@@ -113,15 +104,23 @@ class CommonMazeGenerator:
             iters += 1
             cell = list(frontier)[int(self.rng.integers(0, len(frontier)))]
             frontier.discard(cell)
-            frn = [nbr for nbr in self._free_neighbors(cell[0], cell[1], grid) if nbr in carved]
-            # Carve only if it connects to exactly one carved neighbor to avoid cycles (Prim's algorithm)
-            if len(frn) == 1:
+            # neighbors among carved (stride-2)
+            frn = []
+            for dr, dc in directions:
+                nr, nc = cell[0]+dr, cell[1]+dc
+                if self._in_bounds(nr, nc, grid) and (nr, nc) in carved:
+                    frn.append((nr, nc, dr, dc))
+            if frn:
+                nr, nc, dr, dc = frn[int(self.rng.integers(0, len(frn)))]
+                # carve wall between and the cell
+                grid[cell[0] + dr//2, cell[1] + dc//2] = 0
                 grid[cell[0], cell[1]] = 0
                 carved.add(cell)
-                for dr, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
-                    nr, nc = cell[0]+dr, cell[1]+dc
-                    if self._in_bounds(nr, nc, grid) and (nr, nc) not in carved and (nr, nc) not in frontier:
-                        frontier.add((nr, nc))
+                # add new frontier neighbors
+                for dr2, dc2 in directions:
+                    xr, xc = cell[0]+dr2, cell[1]+dc2
+                    if self._in_bounds(xr, xc, grid) and (xr, xc) not in carved and (xr, xc) not in frontier:
+                        frontier.add((xr, xc))
 
     def _apply_prim(self, grid: np.ndarray, start: Coord, goal: Coord) -> None:
         grid.fill(1)
@@ -141,6 +140,10 @@ class CommonMazeGenerator:
             else:
                 start = (0, 0)
                 goal = (h-1, w-1)
+        # Snap to even coordinates for stride-2 carving to ensure connectivity
+        if self.cfg.algo in ('dfs','prim'):
+            start = (start[0] - start[0] % 2, start[1] - start[1] % 2)
+            goal = (goal[0] - goal[0] % 2, goal[1] - goal[1] % 2)
         grid = np.ones((h, w), dtype=np.int8)
 
         algo_map = {
@@ -154,8 +157,6 @@ class CommonMazeGenerator:
         grid[goal] = 0
 
         sp = self._shortest_path(grid, start, goal)
-        # 🛑 No emergency connect — DFS guarantees connectivity
-        # If sp is empty, it's a bug — but with full DFS, this won't happen.
         return {
             'width': w,
             'height': h,
