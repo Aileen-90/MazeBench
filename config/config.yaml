@@ -15,7 +15,7 @@ image2d:
   algorithm: dfs  # dfs or prim
   seed: 123  # base random seed for reproducibility
 
-  size: '11x11'  # use odd×odd sizes for classic stride-2 wall mazes
+  size: '29x29'  # use odd×odd sizes for classic stride-2 wall mazes
   n: 5
   trap_ratio: 0.0
   cell_px: 24  # pixel size per cell; final image equals maze grid (no outer border)

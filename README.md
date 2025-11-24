@@ -67,7 +67,7 @@ Key parameters:
 
 Recommended ranges:
 - trap_ratio: 0.0–0.2 depending on difficulty
-- size: 10x10–40x40 for practical benchmarking
+- size: 11x11–41x41 (odd×odd recommended) for practical benchmarking
 
 一个用于评测大模型空间推理与路径规划能力的开源基准，包含：
 - 2D 文本迷宫（MazeBench-2D）：以文本网格为输入，路径坐标列表为输出
@@ -232,7 +232,7 @@ image2d:
 
 
 python MazeBench-2D-Image/cli.py
-open MazeBench-2D-Image/examples/report_10x10_0.html
+open MazeBench-2D-Image/examples/report_11x11_0.html
 ```
 
 若未配置 OPENAI_API_KEY 等外部密钥，系统将自动使用 MockAdapter，确保流水线在离线/CI 环境可运行。
@@ -351,5 +351,5 @@ open MazeBench-2D/examples/report_gpt-4o_11x11.html
 
 
 ## 示例输出
-在 examples/ 目录将自动生成 GPT-4o 在 10x10 迷宫上的完整评测报告（HTML）。
+在 examples/ 目录将自动生成 GPT-4o 在 11x11 迷宫上的完整评测报告（HTML）。
 
