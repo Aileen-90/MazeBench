@@ -209,7 +209,8 @@ def eval_from_pregenerated(cfg: Dict, mazes_dir: Path, outdir: Path, mode: str =
             vres = v.validate(parsed.path)
             scores = ImgMetrics().score(vres)
             results.append({'maze': jp.name, 'scores': scores})
-        summary = {'avg_total': round(sum(r['scores']['total'] for r in results)/len(results), 2), 'items': results}
+        avg = round(sum(r['scores']['total'] for r in results)/len(results), 2) if results else 0
+        summary = {'avg_total': avg, 'items': results}
         (outdir / 'image2d_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
         export_summary_pdf(str(outdir / 'image2d_summary.pdf'), 'Image2D Summary', summary, image_paths=img_paths)
         return summary
