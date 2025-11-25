@@ -5,7 +5,7 @@
 ## 快速开始（3行）
 ```
 pip install -r MazeBench-2D/requirements.txt
-python MazeBench-2D/cli.py --model gpt-4o --size 10x10 --workers 4
+python MazeBench-2D/cli.py --model gpt-4o --size 10x10 --workers 4 --algorithm prim_loops
 open MazeBench-2D/examples/report_gpt-4o_10x10.html
 ```
 
@@ -16,7 +16,7 @@ open MazeBench-2D/examples/report_gpt-4o_10x10.html
 ## 模块结构
 - maze_gen：参数化生成标准化迷宫，支持 5×5 至 40×40；不再使用密度参数，转为结构优先（自避免主路径、受限分支、柱体保留），保证连通并输出 shortest_path（已移除 trap_zones）。
 - eval_core：多格式解析器（容忍坐标列表/方向序列/含注释/行列混淆/JSON数组/括号变体/纯数字对），三层验证（有效性→最优性→重叠度），动态加权评分 S/Q/O/A（R 暂停）。
-- model_gateways：统一模型适配（OpenAI/Anthropic），使用 requests，无深度学习框架。
+- common/model_gateway：统一模型适配（OpenAI/Azure/Mock），使用 requests 或官方 SDK；2D/Text 与 2D-Image 共用。
 - report：生成交互式 HTML 报告（综合得分、雷达图、热力图、路径对比与失败快照）。
 - config：默认参数与防作弊策略（输入扰动 + 输出沙盒）。
 
