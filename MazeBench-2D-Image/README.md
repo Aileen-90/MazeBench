@@ -6,14 +6,14 @@
 
 ```
 pip install -r MazeBench-2D-Image/requirements.txt
-python MazeBench-2D-Image/cli.py
+python MazeBench-2D-Image/cli.py --model gpt-4o --algorithm prim_loops
 open MazeBench-2D-Image/examples/report_10x10_0.html
 ```
 
 ## 流水线与模块
 - maze_gen：生成迷宫并渲染为图像，保证起终点连通与最短路径输出
 - eval_core：解析模型文本输出为坐标路径并验证合法性与最优性，计算 S/Q/O/A 评分（R 暂停）
-- model_gateways：MockAdapter 默认；设置 OPENAI_API_KEY 可启用 OpenAI 视觉接口
+- common/model_gateway：统一模型适配（OpenAI/Azure/Mock）；设置 OPENAI_API_KEY 或 AZURE_OPENAI_API_KEY+AZURE_OPENAI_ENDPOINT+DEPLOYMENT 可启用视觉接口
 - report：生成 HTML 报告，嵌入迷宫图片与路径对比
 
 ## CI 友好
