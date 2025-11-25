@@ -52,7 +52,7 @@ class ChatAdapter:
         ) or ''
         # For OpenAI, api_base defaults to public endpoint; for Azure it's the endpoint root (e.g., https://xxx.openai.azure.com)
         if self.provider == 'azure':
-            self.endpoint = api_base or os.getenv('AZURE_OPENAI_ENDPOINT') or ''
+            self.endpoint = api_base or os.getenv('OPENAI_API_BASE') or ''
             self.deployment = deployment or os.getenv('AZURE_OPENAI_DEPLOYMENT') or model
             self.api_version = api_version or os.getenv('AZURE_OPENAI_API_VERSION') or '2024-08-01-preview'
         else:
@@ -82,7 +82,9 @@ class ChatAdapter:
 
     def generate(self, prompt: str, image_path: Optional[str] = None) -> str:
         messages = self._build_messages(prompt, image_path)
+
         if self.provider == 'mock':
+            print('Using MockAdapter')
             return MockAdapter().generate(prompt, image_path)
         if self.provider == 'openai':
             # Try SDK first if requested
@@ -91,28 +93,36 @@ class ChatAdapter:
                     from openai import OpenAI
                     client = OpenAI(api_key=self.api_key, base_url=self.api_base)
                     comp = client.chat.completions.create(model=self.model, messages=messages, temperature=0.0)
+                    print(comp.choices[0].message.content)
                     return comp.choices[0].message.content
                 except Exception:
+                    print('Try SDK Failed')
                     pass
             # HTTP fallback
             url = f"{self.api_base}/chat/completions"
             headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
             data = {"model": self.model, "messages": messages, "temperature": 0.0}
-            resp = requests.post(url, headers=headers, json=data, timeout=15)
+            resp = requests.post(url, headers=headers, json=data, timeout=300)
             resp.raise_for_status()
             j = resp.json()
+            print(j['choices'][0]['message']['content'])
             return j['choices'][0]['message']['content']
         elif self.provider == 'azure':
             # Azure OpenAI uses deployment in path and api-version query; header is api-key
             if not self.endpoint:
-                raise RuntimeError('AZURE endpoint not configured')
+                print('AZURE endpoint not configured')
+            
             url = f"{self.endpoint.rstrip('/')}/openai/deployments/{self.deployment}/chat/completions?api-version={self.api_version}"
             headers = {"api-key": self.api_key, "Content-Type": "application/json"}
-            data: Dict[str, Any] = {"messages": messages, "temperature": 0.0}
+            data: Dict[str, Any] = {"messages": messages, "temperature": 1}
             # In Azure, model name is generally the deployment name
-            resp = requests.post(url, headers=headers, json=data, timeout=20)
+
+            resp = requests.post(url, headers=headers, json=data, timeout=300)
+            
             resp.raise_for_status()
             j = resp.json()
+
+            print(j['choices'][0]['message']['content'])
             return j['choices'][0]['message']['content']
         else:
             raise ValueError(f"Unknown provider: {self.provider}")
@@ -125,13 +135,17 @@ def make_adapter_from_cfg(cfg: Dict[str, Any], image: bool = False) -> ChatAdapt
     if not provider:
         if model.startswith('azure:'):
             provider = 'azure'
+            print('provider = azure')
             model = model.split(':', 1)[1]
         elif model.startswith('mock'):
             provider = 'mock'
+            print('provider = mock')
         elif os.getenv('AZURE_OPENAI_API_KEY') or cfg.get('AZURE_OPENAI_API_KEY'):
             provider = 'azure'
+            print('provider = azure')
         else:
             provider = 'openai'
+            print('provider = openai')
     # Resolve API key for OpenAI-compatible providers
     def _resolve_openai_key() -> str:
         if cfg.get('OPENAI_API_KEY'):
