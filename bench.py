@@ -379,8 +379,10 @@ def main():
             img_summary = {'avg_total': 0}
     else:
         print('Running MazeBenchmark with model', cfg.get('model'))
-        text_summary = run_text2d(cfg, outdir)
-        img_summary = run_image2d(cfg, outdir)
+        if mode in ('text2d','all'):
+            text_summary = run_text2d(cfg, outdir)
+        if mode in ('image2d','all'):
+            img_summary = run_image2d(cfg, outdir)
     overview = {
         'model': cfg.get('model'),
         'text2d_avg': text_summary.get('avg_total', 0),
