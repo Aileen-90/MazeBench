@@ -63,7 +63,7 @@ ImgReport = None
 ImgAntiCheat = None
 
 
-def get_adapter(model: str, openai_key: str | None, image: bool = False, openai_base: str | None = None, openai_key_env: str | None = None, use_sdk: bool | None = None) -> object:
+def get_adapter(model: str, openai_key: str | None, image: bool = False, openai_base: str | None = None, openai_key_env: str | None = None, use_sdk: bool | None = None, thinking: bool | None = None) -> object:
     # Delegate to unified common adapter builder; cfg is composed from env-prepared values
     cfg = {
         'model': model,
@@ -76,8 +76,10 @@ def get_adapter(model: str, openai_key: str | None, image: bool = False, openai_
         'AZURE_OPENAI_ENDPOINT': os.getenv('AZURE_OPENAI_ENDPOINT'),
         'AZURE_OPENAI_DEPLOYMENT': os.getenv('AZURE_OPENAI_DEPLOYMENT'),
         'AZURE_OPENAI_API_VERSION': os.getenv('AZURE_OPENAI_API_VERSION'),
-        'PROVIDER': os.getenv('PROVIDER')
+        'PROVIDER': os.getenv('PROVIDER'),
+        'thinking': thinking
     }
+    # print('get_adapter-thinking:',thinking)
     return make_adapter_from_cfg(cfg, image=image)
 
 
@@ -85,7 +87,7 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
     model = cfg.get('model', 'mock')
     size = (cfg.get('text2d', {}).get('size') or '10x10')
     h, w = map(int, size.split('x'))
-    adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=False, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
+    adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=False, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'), thinking=True)
 
     n = int(cfg.get('text2d', {}).get('n') or 1)
     start_goal = (cfg.get('text2d', {}).get('start_goal') or 'corner')
@@ -105,14 +107,15 @@ def run_text2d(cfg: Dict, outdir: Path) -> Dict:
         
         prompt = (
             f"迷宫大小 {len(maze_p['grid'])}x{len(maze_p['grid'][0])}。迷宫为{maze_p['grid']}。0表示通路可以移动；1表示墙壁，不可穿过。原点在左上角，x 为列索引，y 为行索引。起点{maze_p['start']}，终点{maze_p['goal']}。"
-            f"请只输出坐标路径列表，如 [(y0,x0),(y1,x1),...]，不要解释。"
+            # f"请只输出坐标路径列表，如 [(y0,x0),(y1,x1),...]，不要解释。"
+            f"请输出完整的思考过程坐标路径列表，如 [(y0,x0),(y1,x1),...]，我首先选择……往这边走，因为……。"
         )   
         # prompt=('告诉我你是谁')
         # print(prompt)
         print('text = adapter.generate(prompt)')
         text = adapter.generate(prompt)
         
-
+        # print('这是model的回答：\n',text,'\n')
         text = anti.sandbox_output(text)
         parser = TextParser()
         
@@ -154,7 +157,7 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
     size = (cfg.get('image2d', {}).get('size') or '10x10')
     h, w = map(int, size.split('x'))
     n = int(cfg.get('image2d', {}).get('n') or 3)
-    adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=True, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'))
+    adapter = get_adapter(model, cfg.get('OPENAI_API_KEY'), image=True, openai_base=cfg.get('OPENAI_API_BASE'), openai_key_env=cfg.get('OPENAI_API_KEY_ENV'), use_sdk=cfg.get('USE_OPENAI_SDK'), thinking = True)
     # Lazy import image modules on first use
     global ImgMazeConfig, ImgMazeGenerator, ImgParser, ImgValidator, ImgMetrics, ImgReport, ImgAntiCheat
     if ImgMazeGenerator is None:
@@ -185,10 +188,11 @@ def run_image2d(cfg: Dict, outdir: Path) -> Dict:
         img.save(img_path)
         anti = ImgAntiCheat(seed=maze.get('nonce', 0))
         maze_p = anti.perturb_input(maze)
-        prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表,白色单元格为路径，可以在上面移动；黑色单元格为墙壁，禁止穿越墙壁。迷宫尺寸为 {h}x{w}。原点(0,0)在左上角.x 为列索引，y 为行索引。只输出[(y1,x1),(y2,x2),...]，不要解释。"
+        prompt = f"请根据图片中的迷宫，从绿色起点到红色终点输出坐标路径列表,白色单元格为路径，可以在上面移动；黑色单元格为墙壁，禁止穿越墙壁。迷宫尺寸为 {h}x{w}。原点(0,0)在左上角.x 为列索引，y 为行索引。输出[(y1,x1),(y2,x2),...]和思考过程。"
         
-        print(prompt)
+        # print(prompt)
         text = adapter.generate(prompt, image_path=str(img_path))
+        print('Provided by AI model:', text)
         text = anti.sandbox_output(text)
         parser = ImgParser()
         parsed = parser.parse_with_fallback(text, adapter=None)

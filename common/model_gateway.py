@@ -44,6 +44,7 @@ class ChatAdapter:
         deployment: Optional[str] = None,
         api_version: Optional[str] = None,
         use_sdk: Optional[bool] = None,
+        thinking: bool = False
     ):
         self.provider = (provider or 'openai').lower()
         self.model = model
@@ -58,6 +59,11 @@ class ChatAdapter:
         else:
             self.api_base = api_base or os.getenv('OPENAI_API_BASE') or 'https://api.openai.com/v1'
         self.use_sdk = True if use_sdk is None else bool(use_sdk)
+        self.thinking = thinking
+        if self.thinking :
+            self.extra_body = {"thinking": {"type": "enabled"}}
+        else:
+            self.extra_body = None
 
     def name(self) -> str:
         return f"{self.provider}:{self.model}"
@@ -66,7 +72,7 @@ class ChatAdapter:
         # Text-only message
         if not image_path:
             return [
-                {'role': 'system', 'content': '只输出纯文本坐标路径，如 [(0,0),(0,1),...]，禁止解释。'},
+                {'role': 'system', 'content': '输出纯文本坐标路径，如 [(0,0),(0,1),...]，和思考过程。'},
                 {'role': 'user', 'content': prompt},
             ]
         # Multimodal message for image + text
@@ -76,7 +82,7 @@ class ChatAdapter:
                 b64 = base64.b64encode(f.read()).decode('utf-8')
             content.append({'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{b64}'}})
         return [
-            {'role': 'system', 'content': '只输出纯文本坐标路径，如 [(0,0),(0,1),...]，禁止解释。'},
+            {'role': 'system', 'content': '输出纯文本坐标路径，如 [(0,0),(0,1),...]，和思考过程。'},
             {'role': 'user', 'content': content},
         ]
 
@@ -93,7 +99,7 @@ class ChatAdapter:
                 try:
                     from openai import OpenAI
                     client = OpenAI(api_key=self.api_key, base_url=self.api_base)
-                    comp = client.chat.completions.create(model=self.model, messages=messages, temperature=0.0)
+                    comp = client.chat.completions.create(model=self.model, messages=messages, temperature=0.0, extra_body=self.extra_body)
                     print(comp.choices[0].message.content)
                     return comp.choices[0].message.content
                 except Exception:
@@ -103,12 +109,14 @@ class ChatAdapter:
             url = f"{self.api_base}/chat/completions"
             headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
 
-            print(url,headers)
-            data = {"model": self.model, "messages": messages, "temperature": 0.0}
+            # print(url,headers)
+            data = {"model": self.model, "messages": messages, "temperature": 0.0, "extra_body": self.extra_body}
+            print('ChatAdapter-generate-openai-data:', data)
             resp = requests.post(url, headers=headers, json=data, timeout=300)
             resp.raise_for_status()
             j = resp.json()
-            print('OpenAI Adapter Generated:',j['choices'][0]['message']['content'])
+            print("OpenAI Adapter Generated reasoning_content:", j['choices'][0]['message']['reasoning_content'])
+            # print('OpenAI Adapter Generated content:',j['choices'][0]['message']['content'])
             return j['choices'][0]['message']['content']
         elif self.provider == 'azure':
             # Azure OpenAI uses deployment in path and api-version query; header is api-key
@@ -135,6 +143,7 @@ class ChatAdapter:
 def make_adapter_from_cfg(cfg: Dict[str, Any], image: bool = False) -> ChatAdapter | MockAdapter:
     model = cfg.get('model', 'mock')
     provider = (cfg.get('PROVIDER') or '').lower()
+    thinking = cfg.get('thinking') or False
     # Heuristics: explicit provider > model prefix > presence of azure keys
     if not provider:
         if model.startswith('azure:'):
@@ -188,10 +197,13 @@ def make_adapter_from_cfg(cfg: Dict[str, Any], image: bool = False) -> ChatAdapt
     if not ok:
         print('no openai key, use mock adapter')
         return MockAdapter(model=model)
+
+    print('thinking=',thinking)
     return ChatAdapter(
         provider='openai',
         model=model,
         api_key=ok,
         api_base=cfg.get('OPENAI_API_BASE') or os.getenv('OPENAI_API_BASE') or 'https://api.openai.com/v1',
         use_sdk=use_sdk if use_sdk is not None else True,
+        thinking = thinking
     )
