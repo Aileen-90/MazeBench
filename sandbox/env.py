@@ -120,6 +120,59 @@ class MazeEnvironment:
 
         return self.state, {'success': True, 'position': new_pos}
 
+    def step_path(self, path: List[Tuple[int, int]]) -> Tuple[MazeState, Dict[str, Any]]:
+        """
+        沿着路径移动，找到最后一个合法位置
+
+        Args:
+            path: 坐标路径列表 [(row1, col1), (row2, col2), ...]
+
+        Returns:
+            Tuple[MazeState, Dict]: (新状态, 信息字典)
+        """
+        if self.state.done:
+            return self.state, {'info': '游戏已结束'}
+
+        if not path:
+            return self.state, {'error': '路径为空'}
+
+        # 找到最后一个合法位置
+        valid_position = self.state.position
+        last_valid_index = -1
+
+        for i, pos in enumerate(path):
+            row, col = pos
+
+            # 检查边界
+            height, width = self.grid.shape
+            if not (0 <= row < height and 0 <= col < width):
+                break  # 超出边界，停止
+
+            # 检查是否是墙壁
+            if self.grid[row, col] == 1:
+                break  # 撞墙，停止
+
+            valid_position = pos
+            last_valid_index = i
+
+        # 如果没有移动到任何新位置
+        if valid_position == self.state.position:
+            return self.state, {'error': '无法移动到路径中的任何位置', 'position': self.state.position}
+
+        # 计算移动的步数（到最后一个合法位置）
+        steps_moved = last_valid_index + 1
+
+        # 更新状态
+        self.state.position = valid_position
+        self.state.steps += steps_moved
+
+        # 检查是否到达终点
+        if valid_position == self.goal:
+            self.state.done = True
+            return self.state, {'success': True, 'message': f'恭喜！到达终点！总共走了{self.state.steps}步', 'steps_moved': steps_moved}
+
+        return self.state, {'success': True, 'position': valid_position, 'steps_moved': steps_moved}
+
     def get_available_actions(self) -> List[str]:
         """
         获取当前位置可用的动作
@@ -201,6 +254,54 @@ class MazeEnvironment:
 
         return "\n".join(lines)
 
+    def render_tensor(self, symbols: Dict[str, str] = None) -> np.ndarray:
+        """
+        以张量格式渲染迷宫状态，使用符号表示
+
+        Args:
+            symbols: 符号配置字典，包含 wall, path, start, goal, agent 键
+
+        Returns:
+            np.ndarray: 形状为(height, width)的字符串张量
+        """
+        if self.maze_data is None:
+            return np.array([])
+
+        # 默认符号配置
+        default_symbols = {
+            'wall': '#',
+            'path': ' ',
+            'start': 'S',
+            'goal': 'G',
+            'agent': 'A'
+        }
+
+        # 使用提供的符号或默认符号
+        if symbols is None:
+            symbols = default_symbols
+        else:
+            symbols = {**default_symbols, **symbols}
+
+        height, width = self.grid.shape
+        tensor = np.full((height, width), symbols['path'], dtype='<U10')  # 使用字符串类型
+
+        # 设置墙壁
+        wall_mask = self.grid == 1
+        tensor[wall_mask] = symbols['wall']
+
+        # 设置起点
+        if self.start:
+            tensor[self.start] = symbols['start']
+
+        # 设置终点
+        if self.goal:
+            tensor[self.goal] = symbols['goal']
+
+        # 设置agent位置（覆盖其他标记）
+        tensor[self.state.position] = symbols['agent']
+
+        return tensor
+
     def get_info(self) -> Dict[str, Any]:
         """
         获取迷宫信息
@@ -222,7 +323,7 @@ class MazeEnvironment:
         }
 
     @staticmethod
-    def list_available_mazes(mazes_dir: str = "mazes") -> List[str]:
+    def list_available_mazes(mazes_dir: str = None) -> List[str]:
         """
         列出可用的迷宫文件
 
@@ -232,6 +333,11 @@ class MazeEnvironment:
         Returns:
             List[str]: 迷宫文件名列表
         """
+        if mazes_dir is None:
+            from utils.io import load_config
+            cfg = load_config()
+            mazes_dir = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
+
         mazes_path = Path(mazes_dir)
         if not mazes_path.exists():
             return []

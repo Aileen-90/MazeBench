@@ -1,10 +1,10 @@
 """
-AI Sandbox - 让AI在迷宫中测试模型（精简版）
+AI Sandbox - 让AI在迷宫中测试模型
 """
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 import json
 import time
 
@@ -14,6 +14,32 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from .env import MazeEnvironment
 from adapters import get_adapter
 from utils.io import load_config, apply_env_keys
+import re
+
+
+def parse_path_coordinates(response: str) -> List[Tuple[int, int]]:
+    """
+    解析AI响应中的路径坐标
+
+    支持格式：
+    - (1,2),(3,4),(5,6)
+    - (1, 2), (3, 4), (5, 6)
+    """
+    response = response.strip().lower()
+
+    # 使用正则表达式查找所有坐标对
+    coord_pattern = r'\(\s*(\d+)\s*,\s*(\d+)\s*\)'
+    matches = re.findall(coord_pattern, response)
+
+    path = []
+    for row_str, col_str in matches:
+        try:
+            row, col = int(row_str), int(col_str)
+            path.append((row, col))
+        except ValueError:
+            continue
+
+    return path
 
 
 def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[str, Any]:
@@ -36,8 +62,11 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
         'agent': 'A'
     })
     
+    # 从config加载迷宫路径
+    mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
+
     # 加载迷宫
-    maze_path = Path(f"mazes/{maze}.json")
+    maze_path = Path(f"{mazes_path}/{maze}.json")
     if not maze_path.exists():
         return {'error': f'迷宫不存在: {maze_path}'}
 
@@ -74,7 +103,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
             info = env.get_info()
             print(f"步骤 {step + 1}: 当前位置 {info['current_position']}")
             # 打印迷宫ASCII图
-            maze_ascii = env.render_ascii(symbols=symbols)
+            maze_ascii = env.render_tensor(symbols=symbols)
             # print("当前迷宫状态:")
             # print(maze_ascii)
 
@@ -92,7 +121,9 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
                     memory_str = ", ".join([f"第{i+1}步:{mem['action']}({mem['feedback']})" for i, mem in enumerate(memory_actions)])
                     memory_info = f"最近动作记录: {memory_str}。"
 
-            prompt = f"""当前位置A{info['current_position']},允许输入动作[left,up,right,down],目标{info['goal']}。
+            prompt = f"""当前位置A{info['current_position']},目标{info['goal']}。
+
+你可以：""" + f"1. 输入单个动作：up/down/left/right" + f"2. 输入路径坐标：如 (1,2),(1,3),(2,3) - 系统会移动到最后一个合法位置"+ f"""
 
 迷宫布局：
 {maze_ascii}
@@ -104,26 +135,45 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
 - {symbols['goal']}：终点（目标位置）
 - {symbols['agent']}：当前位置（你所在位置）
 
-{memory_info}只回复下一步动作："""
+{memory_info}回复动作或路径坐标："""
 
             print(f"  Prompt: {prompt}")
             raw_response = adapter.generate(prompt)
-            action = raw_response.strip().lower()
-            
-            if action not in ['up', 'down', 'left', 'right']:
+            response = raw_response.strip().lower()
+
+            # 尝试解析为路径坐标
+            path = parse_path_coordinates(response)
+            action = None
+
+            if path:
+                # 路径坐标模式
+                action_desc = f"路径: {path}"
+                print(f"  AI决策: {action_desc}")
+            elif response in ['up', 'down', 'left', 'right']:
+                # 单个动作模式
+                action = response
+                path = None
+                print(f"  AI决策: {action}")
+            else:
                 print(f"  输出违规，终止测试")
                 # 记录违规反馈到记忆中
-                action_memory.append({'action': action, 'feedback': '输出违规'})
+                action_memory.append({'action': response, 'feedback': '输出违规'})
                 continue
-
-            print(f"  AI决策: {action}")
         except Exception as e:
             print(f"  AI决策出错: {e}，终止测试")
             break
 
-        # 执行动作
-        state, step_info = env.step(action)
-        print(f"  执行动作: {action} -> 新位置: {state.position}")
+        # 执行动作或路径
+        if path:
+            # 路径模式
+            state, step_info = env.step_path(path)
+            action_desc = f"路径移动: {path}"
+            print(f"  执行动作: {action_desc} -> 新位置: {state.position}")
+        else:
+            # 单个动作模式
+            state, step_info = env.step(action)
+            action_desc = action
+            print(f"  执行动作: {action} -> 新位置: {state.position}")
 
         # 确定反馈信息
         feedback = ""
@@ -131,14 +181,18 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
             feedback = step_info['error']
             print(f"  反馈: {feedback}")
         elif 'success' in step_info and step_info.get('success'):
-            feedback = "成功移动"
+            if path:
+                steps_moved = step_info.get('steps_moved', 1)
+                feedback = f"成功移动{steps_moved}步"
+            else:
+                feedback = "成功移动"
         else:
             feedback = "成功移动"
 
         # 更新动作记忆
-        action_memory.append({'action': action, 'feedback': feedback})
+        action_memory.append({'action': action_desc, 'feedback': feedback})
 
-        history.append({'step': step + 1, 'action': action, 'position': state.position})
+        history.append({'step': step + 1, 'action': action_desc, 'position': state.position})
 
         if state.done:
             print(f"步骤 {step + 1}: 到达目标！")

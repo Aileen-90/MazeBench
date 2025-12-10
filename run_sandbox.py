@@ -46,7 +46,7 @@ def run_ai(args):
     # 默认迷宫
     if not ai_args.maze:
         from sandbox.env import MazeEnvironment
-        mazes = MazeEnvironment.list_available_mazes("mazes")
+        mazes = MazeEnvironment.list_available_mazes()  # 从config读取路径
         ai_args.maze = mazes[0] if mazes else None
 
     if not ai_args.maze:

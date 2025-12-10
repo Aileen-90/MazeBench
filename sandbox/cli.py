@@ -20,13 +20,18 @@ from .env import MazeEnvironment
 class MazeCLI:
     """迷宫命令行交互界面"""
 
-    def __init__(self, mazes_dir: str = "mazes"):
+    def __init__(self, mazes_dir: str = None):
         """
         初始化CLI
 
         Args:
             mazes_dir: 迷宫文件目录
         """
+        if mazes_dir is None:
+            from utils.io import load_config
+            cfg = load_config()
+            mazes_dir = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
+
         self.mazes_dir = mazes_dir
         self.env: Optional[MazeEnvironment] = None
 

@@ -21,7 +21,7 @@ from .env import MazeEnvironment
 class MazeAPIServer:
     """迷宫API服务器"""
 
-    def __init__(self, mazes_dir: str = "mazes", host: str = "127.0.0.1", port: int = 5000):
+    def __init__(self, mazes_dir: str = None, host: str = "127.0.0.1", port: int = 5000):
         """
         初始化API服务器
 
@@ -30,6 +30,11 @@ class MazeAPIServer:
             host: 服务器主机地址
             port: 服务器端口
         """
+        if mazes_dir is None:
+            from utils.io import load_config
+            cfg = load_config()
+            mazes_dir = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
+
         self.mazes_dir = mazes_dir
         self.host = host
         self.port = port

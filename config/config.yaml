@@ -18,18 +18,18 @@ mode: "text2d"  # text2d 或 image2d
 
 # 数据路径
 
-output_dir: "outputs/"  # 结果输出文件夹 
+output_dir: "outputs_15x15/"  # 结果输出文件夹 
 # 迷宫生成配置
 generate_mazes: True  # 是否生成新的迷宫数据
-mazes_path: "mazes/"  # 迷宫数据路径（JSON/YAML文件或目录）如果不生成新的迷宫
+mazes_path: "mazes_15x15/"  # 迷宫数据路径（JSON/YAML文件或目录）如果不生成新的迷宫
 # 注意，测试时会使用目录中的所有迷宫
-maze_output_dir: "mazes/"  # 迷宫生成输出目录 如果生成新的迷宫
+maze_output_dir: "mazes_15x15/"  # 迷宫生成输出目录 如果生成新的迷宫
 maze_count: 5  # 生成的迷宫数量
 
 # 文本迷宫配置
 # 如果不生成新的迷宫，则下面的配置都无效，评测会使用mazes_path路径下的迷宫数据
 text2d:
-  size: "9x9"  # 迷宫尺寸 (height x width)
+  size: "15x15"  # 迷宫尺寸 (height x width)
   seed: 42  # 随机种子
   start_goal: "corner"  # 起点终点位置: "corner" 或 "random"
   algorithm: "dfs"  # 生成算法: "dfs" 或 "prim"
@@ -51,6 +51,7 @@ sandbox:
   enabled: true  # 启用AI沙盒测试
   max_steps: 50  # AI测试最大步数
   memory: 5  # AI记忆长度（最近k次动作），0=无记忆，-1=全部记忆
+  mazes_path: "mazes_15x15/"  # 沙盒使用的迷宫路径
   symbols:  # 迷宫符号配置
     wall: "1"  # 墙壁符号
     path: "0"  # 路径符号
