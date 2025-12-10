@@ -99,7 +99,7 @@ class MultiModelMazeTester:
             cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
 
             # 运行AI沙盒测试
-            result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50))
+            result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
 
             test_result = {
                 'model': model,

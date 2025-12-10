@@ -8,7 +8,9 @@ class OpenAIAdapter(BaseAdapter):
     def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1):
         self.client = openai.OpenAI(
             api_key=api_key,
-            base_url=api_base
+            base_url=api_base,
+            timeout=120.0,  # 增加超时时间到120秒
+            max_retries=3   # 设置最大重试次数
         )
         self.model = model
         self.temperature = temperature
