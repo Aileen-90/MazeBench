@@ -248,8 +248,13 @@ def main():
         # 更新mazes_path为新生成的迷宫目录
         cfg['mazes_path'] = maze_output_dir
 
-    # 运行评测
-    run_evaluation(cfg)
+    # 检查是否需要运行评测（默认运行，但可以通过配置跳过）
+    if cfg.get('run_evaluation', True):
+        # 运行评测
+        run_evaluation(cfg)
+    else:
+        logger.info("Skipping evaluation (run_evaluation=False in config)")
+        logger.info("Maze generation completed. Use run_evaluation=True to run tests.")
 
 if __name__ == '__main__':
     main()

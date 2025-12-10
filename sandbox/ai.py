@@ -59,14 +59,16 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
     max_steps = max_steps or cfg.get('sandbox', {}).get('max_steps', 50)
     memory = cfg.get('sandbox', {}).get('memory', 5)  # AI记忆长度
 
-    # 读取符号配置
+    # 读取符号配置和可视范围
     symbols = cfg.get('sandbox', {}).get('symbols', {
         'wall': '█',
         'path': ' ',
         'start': 'S',
         'goal': 'G',
-        'agent': 'A'
+        'agent': 'A',
+        'masked': '?'
     })
+    visibility = cfg.get('sandbox', {}).get('visibility', -1)
     
     # 从config加载迷宫路径
     mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
@@ -80,6 +82,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
     env.reset()
 
     # AI适配器 直接使用/Adapter中的方法
+    temperature = cfg.get('temperature', 0.1)
     adapter_cfg = {
         'PROVIDER': 'azure' if model.startswith('azure') else 'openai',
         'AZURE_OPENAI_API_KEY': cfg.get('AZURE_OPENAI_API_KEY', ''),
@@ -88,7 +91,8 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
         'AZURE_OPENAI_API_VERSION': cfg.get('AZURE_OPENAI_API_VERSION', '2023-12-01-preview'),
         'OPENAI_API_KEY': cfg.get('OPENAI_API_KEY', ''),
         'OPENAI_API_BASE': cfg.get('OPENAI_API_BASE'),
-        'model': model
+        'model': model,
+        'temperature': temperature
     }
     adapter = get_adapter(adapter_cfg)
 
@@ -109,7 +113,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
             info = env.get_info()
             print(f"步骤 {step + 1}: 当前位置 {info['current_position']}")
             # 打印迷宫ASCII图
-            maze_ascii = env.render_tensor(symbols=symbols)
+            maze_ascii = env.render_tensor(symbols=symbols, visibility=visibility)
             # print("当前迷宫状态:")
             # print(maze_ascii)
 
@@ -128,28 +132,28 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
                     memory_info = f"最近动作记录: {memory_str}。"
 
             prompt = f"""你是一个迷宫专家，需要操控自己走到终点。当前位置A{info['current_position']},目标{info['goal']}。
-
 坐标格式：所有坐标都使用 (y, x) 格式，其中 y 是行号，x 是列号。
 
 你可以：
-1. 输入单个动作：up/down/left/right
-2. 输入路径坐标：如 (1,2),(1,3),(2,3) - 坐标格式为 (y,x)，系统会移动到最后一个合法位置
-   注意：如果路径第一个坐标是当前自身坐标 {info['current_position']}，系统会自动跳过第一个坐标
-
+输出路径坐标：如 (1,2),(1,3),(2,3) - 坐标格式为 (y,x)
+注意：请你直接从下一个位置的坐标开始输出，不要输出与当前位置重复的坐标，且输出的坐标必须相邻
+提示：首先确认你的当前位置，然后你可以先移动到安全的位置，再做后续规划
 迷宫布局：
 {maze_ascii}
-
 符号说明：
 - {symbols['wall']}：墙壁，不能穿过
 - {symbols['path']}：道路，可以通行
 - {symbols['start']}：起点（你已离开）
 - {symbols['goal']}：终点（目标位置）
 - {symbols['agent']}：当前位置（你所在位置）
-
-{memory_info}回复动作或路径坐标："""
+{memory_info}回复路径坐标：
+"""
 
             print(f"  Prompt: {prompt}")
+            start_time = time.perf_counter()
             raw_response = adapter.generate(prompt)
+            duration = time.perf_counter() - start_time
+            print(f"  模型回复耗时: {duration:.2f} 秒")
             response = raw_response.strip().lower()
 
             # 尝试解析为路径坐标
@@ -230,4 +234,3 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
 
     result['result_file'] = result_file
     return result
-

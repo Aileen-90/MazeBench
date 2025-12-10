@@ -209,13 +209,14 @@ class MazeEnvironment:
 
         return actions
 
-    def render_ascii(self, show_path: bool = False, symbols: Dict[str, str] = None) -> str:
+    def render_ascii(self, show_path: bool = False, symbols: Dict[str, str] = None, visibility: int = -1) -> str:
         """
         以ASCII字符渲染迷宫
 
         Args:
             show_path: 是否显示最短路径
-            symbols: 符号配置字典，包含 wall, path, start, goal, agent 键
+            symbols: 符号配置字典，包含 wall, path, start, goal, agent, masked 键
+            visibility: 可视范围，0=只能看见自己位置，-1=看见全部地图，正数=可视范围
 
         Returns:
             str: ASCII迷宫字符串
@@ -229,7 +230,8 @@ class MazeEnvironment:
             'path': ' ',
             'start': 'S',
             'goal': 'G',
-            'agent': 'A'
+            'agent': 'A',
+            'masked': '?'
         }
 
         # 使用提供的符号或默认符号
@@ -240,10 +242,19 @@ class MazeEnvironment:
 
         height, width = self.grid.shape
         lines = []
+        agent_y, agent_x = self.state.position
 
         for y in range(height):
             line = ""
             for x in range(width):
+                # 检查可视范围
+                if visibility >= 0:
+                    # 计算曼哈顿距离
+                    distance = abs(y - agent_y) + abs(x - agent_x)
+                    if distance > visibility:
+                        line += symbols['masked']  # 超出可视范围，使用mask符号
+                        continue
+
                 if (y, x) == self.state.position:
                     line += symbols['agent']  # Agent当前位置
                 elif (y, x) == self.start:
@@ -260,12 +271,13 @@ class MazeEnvironment:
 
         return "\n".join(lines)
 
-    def render_tensor(self, symbols: Dict[str, str] = None) -> np.ndarray:
+    def render_tensor(self, symbols: Dict[str, str] = None, visibility: int = -1) -> np.ndarray:
         """
         以张量格式渲染迷宫状态，使用符号表示
 
         Args:
-            symbols: 符号配置字典，包含 wall, path, start, goal, agent 键
+            symbols: 符号配置字典，包含 wall, path, start, goal, agent, masked 键
+            visibility: 可视范围，0=只能看见自己位置，-1=看见全部地图，正数=可视范围
 
         Returns:
             np.ndarray: 形状为(height, width)的字符串张量
@@ -279,7 +291,8 @@ class MazeEnvironment:
             'path': ' ',
             'start': 'S',
             'goal': 'G',
-            'agent': 'A'
+            'agent': 'A',
+            'masked': '?'
         }
 
         # 使用提供的符号或默认符号
@@ -305,6 +318,16 @@ class MazeEnvironment:
 
         # 设置agent位置（覆盖其他标记）(y, x)
         tensor[self.state.position] = symbols['agent']
+
+        # 应用可视范围限制
+        if visibility >= 0:
+            agent_y, agent_x = self.state.position
+            for y in range(height):
+                for x in range(width):
+                    # 计算曼哈顿距离
+                    distance = abs(y - agent_y) + abs(x - agent_x)
+                    if distance > visibility:
+                        tensor[y, x] = symbols['masked']
 
         return tensor
 

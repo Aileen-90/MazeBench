@@ -5,12 +5,13 @@ import openai
 from .base import BaseAdapter
 
 class OpenAIAdapter(BaseAdapter):
-    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4"):
+    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1):
         self.client = openai.OpenAI(
             api_key=api_key,
             base_url=api_base
         )
         self.model = model
+        self.temperature = temperature
 
     def generate(self, prompt, image_path: Optional[str] = None) -> str:
         """调用OpenAI API生成文本，可选图片输入"""
@@ -55,7 +56,7 @@ class OpenAIAdapter(BaseAdapter):
             model=self.model,
             messages=messages,
             max_tokens=1000,
-            temperature=0.1
+            temperature=self.temperature
         )
 
         return response.choices[0].message.content

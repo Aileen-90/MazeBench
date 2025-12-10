@@ -194,11 +194,19 @@ class MazeAPIServer:
                     return jsonify({"error": "No maze loaded. Use /load first"}), 400
 
                 show_path = request.args.get('show_path', 'false').lower() == 'true'
-                ascii_maze = self.env.render_ascii(show_path=show_path)
+
+                # 从配置中获取可视范围参数
+                from utils.io import load_config
+                cfg = load_config()
+                visibility = cfg.get('sandbox', {}).get('visibility', -1)
+                symbols = cfg.get('sandbox', {}).get('symbols', {})
+
+                ascii_maze = self.env.render_ascii(show_path=show_path, symbols=symbols, visibility=visibility)
 
                 return jsonify({
                     "render": ascii_maze,
-                    "show_path": show_path
+                    "show_path": show_path,
+                    "visibility": visibility
                 })
 
             except Exception as e:

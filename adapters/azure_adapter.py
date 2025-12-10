@@ -5,7 +5,7 @@ from openai import AzureOpenAI
 from .base import BaseAdapter
 
 class AzureAdapter(BaseAdapter):
-    def __init__(self, api_key: str, endpoint: str, deployment: str, api_version: str = "2023-12-01-preview"):
+    def __init__(self, api_key: str, endpoint: str, deployment: str, api_version: str = "2023-12-01-preview", temperature: float = 0.1):
         self.client = AzureOpenAI(
             api_key=api_key,
             azure_endpoint=endpoint,
@@ -13,6 +13,7 @@ class AzureAdapter(BaseAdapter):
             api_version=api_version
         )
         self.deployment = deployment
+        self.temperature = temperature
 
     def generate(self, prompt, image_path: Optional[str] = None) -> str:
         """调用Azure OpenAI API生成文本，可选图片输入"""
@@ -56,7 +57,7 @@ class AzureAdapter(BaseAdapter):
             model=self.deployment,
             messages=messages,
             max_tokens=1000,
-            temperature=0.1
+            temperature=self.temperature
         )
 
         return response.choices[0].message.content

@@ -122,9 +122,15 @@ class MazeCLI:
         if message:
             print(message)
 
+        # 从配置中获取可视范围和符号配置
+        from utils.io import load_config
+        cfg = load_config()
+        visibility = cfg.get('sandbox', {}).get('visibility', -1)
+        symbols = cfg.get('sandbox', {}).get('symbols', {})
+
         # 显示迷宫
         print("\n当前迷宫:")
-        print(self.env.render_ascii())
+        print(self.env.render_ascii(symbols=symbols, visibility=visibility))
 
         # 显示状态信息
         info = self.env.get_info()
@@ -133,6 +139,8 @@ class MazeCLI:
         print(f"  终点位置: {info['goal']}")
         print(f"  已走步数: {info['steps']}")
         print(f"  可用动作: {', '.join(info['available_actions'])}")
+        if visibility >= 0:
+            print(f"  可视范围: {visibility}")
 
         if info['done']:
             print("  🎉 恭喜！你到达了终点！")
@@ -193,8 +201,14 @@ class MazeCLI:
             print("===============\n")
 
         elif cmd in ['p', 'path']:
+            # 从配置中获取可视范围和符号配置
+            from utils.io import load_config
+            cfg = load_config()
+            visibility = cfg.get('sandbox', {}).get('visibility', -1)
+            symbols = cfg.get('sandbox', {}).get('symbols', {})
+
             print("\n显示最短路径:")
-            print(self.env.render_ascii(show_path=True))
+            print(self.env.render_ascii(show_path=True, symbols=symbols, visibility=visibility))
             print()
 
         elif cmd in ['q', 'quit']:
