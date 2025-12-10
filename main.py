@@ -31,7 +31,8 @@ def evaluate_text2d_mode(cfg):
         possible_names = [
             f"text2d_maze_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png",
             f"maze_{i}.png",
-            f"generated_text_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png"
+            f"generated_text_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png",
+            f"generated_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png"
         ]
 
         img_path = None
@@ -113,13 +114,28 @@ def evaluate_image2d_mode(cfg):
     from pathlib import Path
     maze_dir = Path(cfg.get('mazes_path', 'mazes/'))
     for i, maze in enumerate(mazes):
-        # 动态从JSON生成图片用于推理
-        from utils.io import render_maze_image
-        img = render_maze_image(maze, cfg.get('image2d', {}).get('cell_px', 24))
-        # 保存图片用于可视化
-        img_path = str(maze_dir / f"generated_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png")
-        img.save(img_path)
-        logger.info(f"Generated image for maze {i+1}: {img_path}")
+        # 尝试找到对应的图片文件
+        possible_names = [
+            f"image2d_maze_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png",
+            f"maze_{i}.png",
+            f"generated_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png"
+        ]
+
+        img_path = None
+        for name in possible_names:
+            candidate = maze_dir / name
+            if candidate.exists():
+                img_path = str(candidate)
+                break
+
+        if img_path is None:
+            # 如果没有找到图片，生成一个
+            from utils.io import render_maze_image
+            img = render_maze_image(maze, cfg.get('image2d', {}).get('cell_px', 24))
+            img_path = str(maze_dir / f"generated_{maze.get('height', 10)}x{maze.get('width', 10)}_{i}.png")
+            img.save(img_path)
+            logger.info(f"Generated image for maze {i+1}: {img_path}")
+
         img_paths.append(img_path)
 
     logger.info(f"Loaded {len(mazes)} mazes with {len(img_paths)} images")

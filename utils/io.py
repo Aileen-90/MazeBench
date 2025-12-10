@@ -41,8 +41,9 @@ def load_mazes(path) -> List[Dict]:
     mazes = []
 
     if p.is_dir():
-        # 扫描目录下的所有json文件
-        for file in p.glob('*.json'):
+        # 扫描目录下的所有json文件，按文件名排序确保顺序一致
+        json_files = sorted(p.glob('*.json'))
+        for file in json_files:
             try:
                 with open(file, 'r', encoding='utf-8') as f:
                     data = json.load(f)

@@ -170,7 +170,3 @@ class MazeGenerator:
             'nonce': int(self.cfg.seed) if self.cfg.seed is not None else 0,
         }
 
-
-class TextMazeGenerator(MazeGenerator):
-    """文本迷宫生成器"""
-    pass

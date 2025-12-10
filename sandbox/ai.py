@@ -127,7 +127,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
                     memory_str = ", ".join([f"第{i+1}步:{mem['action']}({mem['feedback']})" for i, mem in enumerate(memory_actions)])
                     memory_info = f"最近动作记录: {memory_str}。"
 
-            prompt = f"""当前位置A{info['current_position']},目标{info['goal']}。
+            prompt = f"""你是一个迷宫专家，需要操控自己走到终点。当前位置A{info['current_position']},目标{info['goal']}。
 
 坐标格式：所有坐标都使用 (y, x) 格式，其中 y 是行号，x 是列号。
 
