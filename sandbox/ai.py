@@ -17,13 +17,15 @@ from utils.io import load_config, apply_env_keys
 import re
 
 
-def parse_path_coordinates(response: str) -> List[Tuple[int, int]]:
+def parse_path_coordinates(response: str, current_position: Tuple[int, int] = None) -> List[Tuple[int, int]]:
     """
-    解析AI响应中的路径坐标
+    解析AI响应中的路径坐标，坐标格式为 (y, x)
 
     支持格式：
     - (1,2),(3,4),(5,6)
     - (1, 2), (3, 4), (5, 6)
+
+    如果第一个坐标是当前自身坐标，会自动跳过
     """
     response = response.strip().lower()
 
@@ -32,12 +34,16 @@ def parse_path_coordinates(response: str) -> List[Tuple[int, int]]:
     matches = re.findall(coord_pattern, response)
 
     path = []
-    for row_str, col_str in matches:
+    for y_str, x_str in matches:
         try:
-            row, col = int(row_str), int(col_str)
-            path.append((row, col))
+            y, x = int(y_str), int(x_str)
+            path.append((y, x))
         except ValueError:
             continue
+
+    # 如果提供了当前坐标且路径第一个坐标是自身坐标，则跳过第一个坐标
+    if current_position and path and path[0] == current_position:
+        path = path[1:]
 
     return path
 
@@ -123,7 +129,12 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
 
             prompt = f"""当前位置A{info['current_position']},目标{info['goal']}。
 
-你可以：""" + f"1. 输入单个动作：up/down/left/right" + f"2. 输入路径坐标：如 (1,2),(1,3),(2,3) - 系统会移动到最后一个合法位置"+ f"""
+坐标格式：所有坐标都使用 (y, x) 格式，其中 y 是行号，x 是列号。
+
+你可以：
+1. 输入单个动作：up/down/left/right
+2. 输入路径坐标：如 (1,2),(1,3),(2,3) - 坐标格式为 (y,x)，系统会移动到最后一个合法位置
+   注意：如果路径第一个坐标是当前自身坐标 {info['current_position']}，系统会自动跳过第一个坐标
 
 迷宫布局：
 {maze_ascii}
@@ -142,7 +153,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
             response = raw_response.strip().lower()
 
             # 尝试解析为路径坐标
-            path = parse_path_coordinates(response)
+            path = parse_path_coordinates(response, info['current_position'])
             action = None
 
             if path:

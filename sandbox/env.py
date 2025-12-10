@@ -15,7 +15,7 @@ from dataclasses import dataclass
 @dataclass
 class MazeState:
     """迷宫状态"""
-    position: Tuple[int, int]  # 当前位置 (row, col)
+    position: Tuple[int, int]  # 当前位置 (y, x)
     done: bool = False  # 是否到达终点
     steps: int = 0  # 已走的步数
 
@@ -87,26 +87,26 @@ class MazeEnvironment:
             return self.state, {'info': '游戏已结束'}
 
         # 计算新位置
-        row, col = self.state.position
+        y, x = self.state.position
         if action == 'up':
-            new_pos = (row - 1, col)
+            new_pos = (y - 1, x)
         elif action == 'down':
-            new_pos = (row + 1, col)
+            new_pos = (y + 1, x)
         elif action == 'left':
-            new_pos = (row, col - 1)
+            new_pos = (y, x - 1)
         elif action == 'right':
-            new_pos = (row, col + 1)
+            new_pos = (y, x + 1)
         else:
             return self.state, {'error': f'无效动作: {action}', 'valid_actions': ['up', 'down', 'left', 'right']}
 
         # 检查边界
         height, width = self.grid.shape
-        new_row, new_col = new_pos
-        if not (0 <= new_row < height and 0 <= new_col < width):
+        new_y, new_x = new_pos
+        if not (0 <= new_y < height and 0 <= new_x < width):
             return self.state, {'error': '撞墙了！超出边界', 'position': self.state.position}
 
         # 检查是否是墙壁
-        if self.grid[new_row, new_col] == 1:
+        if self.grid[new_y, new_x] == 1:
             return self.state, {'error': '撞墙了！这是墙壁', 'position': self.state.position}
 
         # 更新状态
@@ -122,10 +122,10 @@ class MazeEnvironment:
 
     def step_path(self, path: List[Tuple[int, int]]) -> Tuple[MazeState, Dict[str, Any]]:
         """
-        沿着路径移动，找到最后一个合法位置
+        沿着路径移动，确保路径连续且每步都合法
 
         Args:
-            path: 坐标路径列表 [(row1, col1), (row2, col2), ...]
+            path: 坐标路径列表 [(y1, x1), (y2, x2), ...]
 
         Returns:
             Tuple[MazeState, Dict]: (新状态, 信息字典)
@@ -136,42 +136,48 @@ class MazeEnvironment:
         if not path:
             return self.state, {'error': '路径为空'}
 
-        # 找到最后一个合法位置
-        valid_position = self.state.position
-        last_valid_index = -1
+        current_position = self.state.position
+        valid_steps = 0
 
-        for i, pos in enumerate(path):
-            row, col = pos
+        for pos in path:
+            y, x = pos
+
+            # 检查是否是当前相邻位置（不允许跳步）
+            current_y, current_x = current_position
+            y_diff = abs(y - current_y)
+            x_diff = abs(x - current_x)
+
+            # 必须是相邻移动（上下左右），不允许跳步
+            if not ((y_diff == 1 and x_diff == 0) or (y_diff == 0 and x_diff == 1)):
+                return self.state, {'error': f'跳步检测：从{current_position}到{pos}不是相邻移动', 'position': self.state.position}
 
             # 检查边界
             height, width = self.grid.shape
-            if not (0 <= row < height and 0 <= col < width):
-                break  # 超出边界，停止
+            if not (0 <= y < height and 0 <= x < width):
+                return self.state, {'error': f'撞墙检测：位置{pos}超出边界', 'position': self.state.position}
 
             # 检查是否是墙壁
-            if self.grid[row, col] == 1:
-                break  # 撞墙，停止
+            if self.grid[y, x] == 1:
+                return self.state, {'error': f'撞墙检测：位置{pos}是墙壁', 'position': self.state.position}
 
-            valid_position = pos
-            last_valid_index = i
+            # 更新当前位置和有效步数
+            current_position = pos
+            valid_steps += 1
 
-        # 如果没有移动到任何新位置
-        if valid_position == self.state.position:
+        # 如果没有有效移动
+        if valid_steps == 0:
             return self.state, {'error': '无法移动到路径中的任何位置', 'position': self.state.position}
 
-        # 计算移动的步数（到最后一个合法位置）
-        steps_moved = last_valid_index + 1
-
         # 更新状态
-        self.state.position = valid_position
-        self.state.steps += steps_moved
+        self.state.position = current_position
+        self.state.steps += valid_steps
 
         # 检查是否到达终点
-        if valid_position == self.goal:
+        if current_position == self.goal:
             self.state.done = True
-            return self.state, {'success': True, 'message': f'恭喜！到达终点！总共走了{self.state.steps}步', 'steps_moved': steps_moved}
+            return self.state, {'success': True, 'message': f'恭喜！到达终点！总共走了{self.state.steps}步', 'steps_moved': valid_steps}
 
-        return self.state, {'success': True, 'position': valid_position, 'steps_moved': steps_moved}
+        return self.state, {'success': True, 'position': current_position, 'steps_moved': valid_steps}
 
     def get_available_actions(self) -> List[str]:
         """
@@ -184,7 +190,7 @@ class MazeEnvironment:
             return []
 
         actions = []
-        row, col = self.state.position
+        y, x = self.state.position
         height, width = self.grid.shape
 
         # 检查每个方向
@@ -195,10 +201,10 @@ class MazeEnvironment:
             ('right', (0, 1))
         ]
 
-        for action, (dr, dc) in directions:
-            new_row, new_col = row + dr, col + dc
-            if (0 <= new_row < height and 0 <= new_col < width and
-                self.grid[new_row, new_col] == 0):
+        for action, (dy, dx) in directions:
+            new_y, new_x = y + dy, x + dx
+            if (0 <= new_y < height and 0 <= new_x < width and
+                self.grid[new_y, new_x] == 0):
                 actions.append(action)
 
         return actions
@@ -235,18 +241,18 @@ class MazeEnvironment:
         height, width = self.grid.shape
         lines = []
 
-        for i in range(height):
+        for y in range(height):
             line = ""
-            for j in range(width):
-                if (i, j) == self.state.position:
+            for x in range(width):
+                if (y, x) == self.state.position:
                     line += symbols['agent']  # Agent当前位置
-                elif (i, j) == self.start:
+                elif (y, x) == self.start:
                     line += symbols['start']  # 起点
-                elif (i, j) == self.goal:
+                elif (y, x) == self.goal:
                     line += symbols['goal']  # 终点
-                elif show_path and self.maze_data.get('shortest_path') and (i, j) in [tuple(p) for p in self.maze_data['shortest_path']]:
+                elif show_path and self.maze_data.get('shortest_path') and (y, x) in [tuple(p) for p in self.maze_data['shortest_path']]:
                     line += "*"  # 最短路径
-                elif self.grid[i, j] == 1:
+                elif self.grid[y, x] == 1:
                     line += symbols['wall']  # 墙壁
                 else:
                     line += symbols['path']  # 空地
@@ -289,15 +295,15 @@ class MazeEnvironment:
         wall_mask = self.grid == 1
         tensor[wall_mask] = symbols['wall']
 
-        # 设置起点
+        # 设置起点 (y, x)
         if self.start:
             tensor[self.start] = symbols['start']
 
-        # 设置终点
+        # 设置终点 (y, x)
         if self.goal:
             tensor[self.goal] = symbols['goal']
 
-        # 设置agent位置（覆盖其他标记）
+        # 设置agent位置（覆盖其他标记）(y, x)
         tensor[self.state.position] = symbols['agent']
 
         return tensor
