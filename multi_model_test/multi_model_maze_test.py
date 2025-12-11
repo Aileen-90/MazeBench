@@ -23,7 +23,8 @@ import sys
 import glob
 
 # 添加项目根目录到Python路径
-project_root = Path(__file__).parent
+# project_root = Path(__file__).parent
+project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from sandbox.ai import run_ai_sandbox
@@ -98,9 +99,12 @@ class MultiModelMazeTester:
             cfg['sandbox'] = cfg.get('sandbox', {})
             cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
 
-            # 运行AI沙盒测试
+            # 运行AI沙盒测试 - 现在会返回完整的统计信息
             result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
 
+            # 提取统计信息
+            stats = result.get('stats', {})
+            
             test_result = {
                 'model': model,
                 'maze_size': maze_size,
@@ -111,10 +115,24 @@ class MultiModelMazeTester:
                 'total_steps': len(result.get('path', [])),
                 'error': result.get('error', None),
                 'timestamp': time.time(),
-                'result_file': result.get('result_file', None)
+                'result_file': result.get('result_file', None),
+                
+                # ============ 新增：统计字段 ============
+                'api_calls': result.get('api_calls', 0),
+                'total_time': result.get('total_time', 0),
+                'wall_collisions': result.get('wall_collisions', 0),
+                'invalid_jumps': result.get('invalid_jumps', 0),
+                'parse_errors': result.get('parse_errors', 0),
+                'error_count': result.get('error_count', 0),
+                'errors': result.get('stats', {}).get('errors', []),
+                'error_types': self._extract_error_types(result),
+                # =======================================
             }
 
-            logger.info(f"测试完成: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - 成功={test_result['success']}, 步数={test_result['steps']}")
+            logger.info(f"测试完成: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - "
+                    f"成功={test_result['success']}, 步数={test_result['steps']}, "
+                    f"API调用={test_result['api_calls']}, 错误数={test_result['error_count']}, "
+                    f"总时间={test_result['total_time']:.2f}秒")
 
             return test_result
 
@@ -130,8 +148,88 @@ class MultiModelMazeTester:
                 'total_steps': 0,
                 'error': str(e),
                 'timestamp': time.time(),
-                'result_file': None
+                'result_file': None,
+                'api_calls': 0,
+                'total_time': 0,
+                'wall_collisions': 0,
+                'invalid_jumps': 0,
+                'parse_errors': 0,
+                'error_count': 0,
+                'errors': [],
+                'error_types': {}
             }
+
+    def _extract_error_types(self, result: Dict[str, Any]) -> Dict[str, int]:
+        """提取错误类型统计"""
+        error_types = {}
+        errors = result.get('stats', {}).get('errors', [])
+        
+        for error in errors:
+            error_type = error.get('type', 'unknown')
+            subtype = error.get('subtype', None)
+            
+            if subtype:
+                key = f"{error_type}.{subtype}"
+            else:
+                key = error_type
+                
+            error_types[key] = error_types.get(key, 0) + 1
+        
+        return error_types
+
+
+
+
+
+
+
+    # def run_single_test(self, model: str, maze_size: str, maze_name: str, trial_id: int) -> Dict[str, Any]:
+    #     """运行单个测试"""
+    #     logger.info(f"开始测试: 模型={model}, 迷宫={maze_size}/{maze_name}, 尝试={trial_id+1}")
+
+    #     try:
+    #         # 创建模型特定的配置
+    #         cfg = self.base_cfg.copy()
+    #         cfg['model'] = model
+
+    #         # 设置迷宫路径
+    #         cfg['sandbox'] = cfg.get('sandbox', {})
+    #         cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
+
+    #         # 运行AI沙盒测试
+    #         result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
+
+    #         test_result = {
+    #             'model': model,
+    #             'maze_size': maze_size,
+    #             'maze_name': maze_name,
+    #             'trial_id': trial_id,
+    #             'success': result.get('success', False),
+    #             'steps': result.get('steps', 0),
+    #             'total_steps': len(result.get('path', [])),
+    #             'error': result.get('error', None),
+    #             'timestamp': time.time(),
+    #             'result_file': result.get('result_file', None)
+    #         }
+
+    #         logger.info(f"测试完成: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - 成功={test_result['success']}, 步数={test_result['steps']}")
+
+    #         return test_result
+
+    #     except Exception as e:
+    #         logger.error(f"测试失败: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - {e}")
+    #         return {
+    #             'model': model,
+    #             'maze_size': maze_size,
+    #             'maze_name': maze_name,
+    #             'trial_id': trial_id,
+    #             'success': False,
+    #             'steps': 0,
+    #             'total_steps': 0,
+    #             'error': str(e),
+    #             'timestamp': time.time(),
+    #             'result_file': None
+    #         }
 
     def save_test_result(self, result: Dict[str, Any]) -> str:
         """保存单个测试结果到文件"""
@@ -378,7 +476,7 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
     print("测试完成！关键统计:")
     print("="*60)
     for model, stats in summary.get('model_stats', {}).items():
-        print(f"{model}: 成功率 {stats['success_rate']:.1f}%, 平均步数 {stats['avg_steps_successful']:.1f}")
+        print(f"{model}: 成功率 {stats['success_rate'] * 100:.1f}%, 平均步数 {stats['avg_steps_successful']:.1f}")
     print(f"\n总测试数: {summary.get('total_tests', 0)}")
     print(f"总体成功率: {summary.get('overall_stats', {}).get('overall_success_rate', 0):.1f}%")
 
