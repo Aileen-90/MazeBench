@@ -23,7 +23,8 @@ import sys
 import glob
 
 # 添加项目根目录到Python路径
-project_root = Path(__file__).parent
+# project_root = Path(__file__).parent
+project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from sandbox.ai import run_ai_sandbox
@@ -372,7 +373,7 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
     summary = tester.run_all_tests()
     end_time = time.time()
 
-    logger.info(".1f"
+    logger.info(".1f")
     # 打印关键统计信息
     print("\n" + "="*60)
     print("测试完成！关键统计:")
