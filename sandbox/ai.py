@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple
 import json
 import time
-
+import traceback
 # 项目路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -48,11 +48,12 @@ def parse_path_coordinates(response: str, current_position: Tuple[int, int] = No
     return path
 
 
-def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[str, Any]:
+def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dict[str, Any] = None) -> Dict[str, Any]:
     """运行AI沙盒测试"""
-    # 加载配置
-    cfg = load_config()
-    apply_env_keys(cfg)
+    # 如果没有提供配置，则加载默认配置
+    if cfg is None:
+        cfg = load_config()
+        apply_env_keys(cfg)
 
     # 默认参数
     model = model or cfg.get('model', 'gpt-4')
@@ -146,7 +147,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
 - {symbols['start']}：起点（你已离开）
 - {symbols['goal']}：终点（目标位置）
 - {symbols['agent']}：当前位置（你所在位置）
-{memory_info}回复路径坐标：
+{memory_info}请你回复路径坐标序列：
 """
 
             print(f"  Prompt: {prompt}")
@@ -175,7 +176,13 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None) -> Dict[
                 action_memory.append({'action': response, 'feedback': '输出违规'})
                 continue
         except Exception as e:
-            print(f"  AI决策出错: {e}，终止测试")
+            print(f"  AI决策出错: {type(e).__name__}: {e}，终止测试")
+            print("=== 完整错误信息 ===")
+            print(f"错误类型: {type(e).__name__}")
+            print(f"错误消息: {str(e)}")
+            print("完整堆栈跟踪:")
+            traceback.print_exc()
+            print("===================")
             break
 
         # 执行动作或路径

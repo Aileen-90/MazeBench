@@ -100,7 +100,7 @@ class MultiModelMazeTester:
             cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
 
             # 运行AI沙盒测试
-            result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50))
+            result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
 
             test_result = {
                 'model': model,
@@ -373,15 +373,15 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
     summary = tester.run_all_tests()
     end_time = time.time()
 
-    logger.info(".1f")
+    logger.info(f"测试完成！总耗时: {(end_time - start_time):.1f}秒")
     # 打印关键统计信息
     print("\n" + "="*60)
     print("测试完成！关键统计:")
     print("="*60)
     for model, stats in summary.get('model_stats', {}).items():
-        print(".1f")
+        print(f"{model}: 成功率 {stats['success_rate']:.1f}%, 平均步数 {stats['avg_steps_successful']:.1f}")
     print(f"\n总测试数: {summary.get('total_tests', 0)}")
-    print(".1f")
+    print(f"总体成功率: {summary.get('overall_stats', {}).get('overall_success_rate', 0):.1f}%")
 
 
 if __name__ == '__main__':
