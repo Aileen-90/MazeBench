@@ -38,7 +38,8 @@ class MultiModelMazeTester:
     """多模型迷宫测试器"""
 
     def __init__(self, models: List[str], maze_sizes: List[str], trials_per_maze: int = 10,
-                 max_workers: int = 4, output_base_dir: str = "multi_model_results"):
+                 max_workers: int = 4, output_base_dir: str = "multi_model_results",
+                 mazes_base_dir: str = None):
         """
         初始化测试器
 
@@ -48,6 +49,7 @@ class MultiModelMazeTester:
             trials_per_maze: 每个迷宫的测试次数
             max_workers: 最大并发线程数
             output_base_dir: 结果输出基础目录
+            mazes_base_dir: 迷宫父目录（默认从配置文件读取或使用 'mazes'）
         """
         self.models = models
         self.maze_sizes = maze_sizes
@@ -59,31 +61,58 @@ class MultiModelMazeTester:
         self.base_cfg = load_config()
         self.base_cfg = apply_env_keys(self.base_cfg)
 
+        # 确定迷宫父目录
+        if mazes_base_dir is None:
+            # 从配置文件读取，默认使用 'mazes'
+            self.mazes_base_dir = Path(self.base_cfg.get('sandbox', {}).get('mazes_path', 'mazes/'))
+            # 如果配置中是相对路径，去掉末尾的斜杠
+            if str(self.mazes_base_dir).endswith('/'):
+                self.mazes_base_dir = Path(str(self.mazes_base_dir)[:-1])
+        else:
+            self.mazes_base_dir = Path(mazes_base_dir)
+
         # 创建输出目录
         self.output_base_dir.mkdir(exist_ok=True)
 
-        logger.info(f"初始化多模型测试器: {len(models)}个模型, {len(maze_sizes)}种迷宫大小, 每迷宫{trials_per_maze}次测试")
+        logger.info(f"初始化多模型测试器: {len(models)}个模型, {len(maze_sizes)}种迷宫大小, 每迷宫{trials_per_maze}次测试, 迷宫目录: {self.mazes_base_dir}")
+        self.size_to_dir = {}  # 缓存尺寸到实际目录名的映射
+
+    def _find_dir(self, size: str) -> str:
+        """查找匹配尺寸的目录名，支持模糊匹配"""
+        if size in self.size_to_dir:
+            return self.size_to_dir[size]
+        
+        if not self.mazes_base_dir.exists():
+            return size
+        
+        # 精确匹配
+        if (self.mazes_base_dir / size).exists():
+            self.size_to_dir[size] = size
+            return size
+        
+        # 模糊匹配
+        for d in self.mazes_base_dir.iterdir():
+            if d.is_dir() and size in d.name:
+                self.size_to_dir[size] = d.name
+                logger.info(f"模糊匹配: {size} -> {d.name}")
+                return d.name
+        
+        return size
 
     def get_available_mazes(self) -> Dict[str, List[str]]:
-        """获取所有可用迷宫，按大小分组"""
+        """获取所有可用迷宫，按大小分组，支持模糊匹配"""
         mazes_by_size = {}
-
         for size in self.maze_sizes:
-            maze_dir = Path(f"mazes_{size}")
+            dir_name = self._find_dir(size)
+            maze_dir = self.mazes_base_dir / dir_name
             if not maze_dir.exists():
                 logger.warning(f"迷宫目录不存在: {maze_dir}")
                 continue
-
-            # 查找该目录下的所有迷宫文件
             maze_files = list(maze_dir.glob("*.json"))
-            maze_names = [f.stem for f in maze_files]  # 去掉.json后缀
-
+            maze_names = [f.stem for f in maze_files]
             if maze_names:
                 mazes_by_size[size] = maze_names
                 logger.info(f"找到 {size} 迷宫: {len(maze_names)} 个")
-            else:
-                logger.warning(f"{size} 目录下未找到迷宫文件")
-
         return mazes_by_size
 
     def run_single_test(self, model: str, maze_size: str, maze_name: str, trial_id: int) -> Dict[str, Any]:
@@ -95,9 +124,10 @@ class MultiModelMazeTester:
             cfg = self.base_cfg.copy()
             cfg['model'] = model
 
-            # 设置迷宫路径
+            # 设置迷宫路径: 使用匹配到的目录名
             cfg['sandbox'] = cfg.get('sandbox', {})
-            cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
+            dir_name = self._find_dir(maze_size)
+            cfg['sandbox']['mazes_path'] = str(self.mazes_base_dir / dir_name) + "/"
 
             # 运行AI沙盒测试 - 现在会返回完整的统计信息
             result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
@@ -337,12 +367,14 @@ class MultiModelMazeTester:
             model_results = [r for r in results if r['model'] == model]
             successful_tests = [r for r in model_results if r['success']]
             avg_steps = sum(r['steps'] for r in successful_tests) / len(successful_tests) if successful_tests else 0
+            avg_api_calls = sum(r.get('api_calls', 0) for r in model_results) / len(model_results) if model_results else 0
 
             summary['model_stats'][model] = {
                 'total_tests': len(model_results),
                 'successful_tests': len(successful_tests),
                 'success_rate': len(successful_tests) / len(model_results) if model_results else 0,
                 'avg_steps_successful': avg_steps,
+                'avg_api_calls': avg_api_calls,
                 'failed_tests': len(model_results) - len(successful_tests)
             }
 
@@ -420,20 +452,26 @@ def main():
         epilog="""
 使用示例:
 
+# 从配置文件读取模型，测试三种迷宫大小，每迷宫10次测试
+python run_multi_test.py --sizes 5x5 9x9 15x15 --trials 10
+
 # 测试两个模型在三种迷宫大小上，每迷宫10次测试
-python multi_model_maze_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10
+python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10
 
 # 指定并发线程数
-python multi_model_maze_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
+python run_multi_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
 
-# 自定义输出目录
-python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_results
+# 自定义输出目录和迷宫目录
+python run_multi_test.py --models gpt-4 --sizes 9x9 --output-dir my_results --mazes-dir my_mazes
+
+# 完整示例：涵盖所有字段
+python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10 --workers 4 --output-dir my_results --mazes-dir mazes
         """
     )
 
     parser.add_argument(
-        '--models', nargs='+', required=True,
-        help='要测试的模型列表'
+        '--models', nargs='+', required=False,
+        help='要测试的模型列表（如果未指定，将从配置文件中读取）'
     )
     parser.add_argument(
         '--sizes', nargs='+', required=True,
@@ -451,11 +489,39 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
         '--output-dir', default='multi_model_results',
         help='结果输出目录 (默认: multi_model_results)'
     )
+    parser.add_argument(
+        '--mazes-dir', default='mazes/',
+        help='迷宫父目录路径 (默认: 从配置文件读取或使用 mazes/)'
+    )
 
     args = parser.parse_args()
 
     # 设置日志
     setup_logging()
+
+    # 如果未指定模型，从配置文件读取
+    if args.models is None:
+        # 加载配置
+        base_cfg = load_config()
+        base_cfg = apply_env_keys(base_cfg)
+        
+        # 优先使用 models 字段（列表），如果没有则使用 model 字段（单个）
+        if 'models' in base_cfg and base_cfg['models']:
+            models = base_cfg['models']
+            if isinstance(models, str):
+                models = [models]
+            elif not isinstance(models, list):
+                models = [str(models)]
+        elif 'model' in base_cfg and base_cfg['model']:
+            model = base_cfg['model']
+            models = [model] if isinstance(model, str) else [str(model)]
+        else:
+            logger.error("配置文件中未找到 'model' 或 'models' 字段，且命令行也未指定 --models")
+            parser.print_help()
+            sys.exit(1)
+        
+        logger.info(f"从配置文件读取模型列表: {models}")
+        args.models = models
 
     # 创建测试器并运行
     tester = MultiModelMazeTester(
@@ -463,7 +529,8 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
         maze_sizes=args.sizes,
         trials_per_maze=args.trials,
         max_workers=args.workers,
-        output_base_dir=args.output_dir
+        output_base_dir=args.output_dir,
+        mazes_base_dir=args.mazes_dir
     )
 
     start_time = time.time()
@@ -476,9 +543,9 @@ python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_resul
     print("测试完成！关键统计:")
     print("="*60)
     for model, stats in summary.get('model_stats', {}).items():
-        print(f"{model}: 成功率 {stats['success_rate'] * 100:.1f}%, 平均步数 {stats['avg_steps_successful']:.1f}")
+        print(f"{model}: 成功率 {stats['success_rate']:.2f}, 平均步数 {stats['avg_steps_successful']:.1f}, 平均API调用 {stats.get('avg_api_calls', 0):.1f}")
     print(f"\n总测试数: {summary.get('total_tests', 0)}")
-    print(f"总体成功率: {summary.get('overall_stats', {}).get('overall_success_rate', 0):.1f}%")
+    print(f"总体成功率: {summary.get('overall_stats', {}).get('overall_success_rate', 0):.2f}")
 
 
 if __name__ == '__main__':

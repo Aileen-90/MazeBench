@@ -2,15 +2,24 @@
 import os
 from typing import Optional
 import openai
+import httpx
 from .base import BaseAdapter
 
 class OpenAIAdapter(BaseAdapter):
     def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1):
+        # 使用httpx.Timeout设置更细粒度的超时控制
+        # connect: 连接超时, read: 读取响应超时, write: 写入请求超时
+        custom_timeout = httpx.Timeout(
+            connect=30.0,   # 30秒连接超时
+            read=1200.0,    # 1200秒（20分钟）读取超时，适用于长时间生成
+            write=30.0,     # 30秒写入超时
+            pool=30.0       # 30秒连接池超时
+        )
         self.client = openai.OpenAI(
             api_key=api_key,
             base_url=api_base,
-            timeout=120.0,  # 增加超时时间到120秒
-            max_retries=3   # 设置最大重试次数
+            timeout=custom_timeout,
+            max_retries=10   # 设置最大重试次数
         )
         self.model = model
         self.temperature = temperature
@@ -58,7 +67,21 @@ class OpenAIAdapter(BaseAdapter):
             model=self.model,
             messages=messages,
             max_tokens=1000,
-            temperature=self.temperature
+            temperature=self.temperature, 
+            # extra_body={"enable_thinking":True} # 百炼qwen3
+            thinking={"type":"enabled"} # 火山deepseek
         )
+        # completion = client.chat.completions.create(
+        #     model="qwen-plus", # 选择模型
+        #     messages=[{"role": "user", "content": "你是谁"}],    
+        #     # 由于 enable_thinking 非 OpenAI 标准参数，需要通过 extra_body 传入
+        #     extra_body={"enable_thinking":True},
+        #     # 流式输出方式调用
+        #     stream=True,
+        #     # 使流式返回的最后一个数据包包含Token消耗信息
+        #     stream_options={
+        #         "include_usage": True
+        #     }
+        # )
 
         return response.choices[0].message.content
