@@ -144,9 +144,9 @@ def create_summary_visualization_html(results: List[Dict], output_path: str, tit
         </tr>"""
 
     for i, result in enumerate(results):
-        status = "正常"
+        status = "Normal"
         if 'error' in result:
-            status = f'<span class="error">错误</span>'
+            status = f'<span class="error">Error</span>'
 
         html += f"""
         <tr>

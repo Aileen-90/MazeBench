@@ -19,17 +19,17 @@ class MazeValidator:
         返回验证结果字典
         """
         if not path:
-            return {'ok': False, 'error': '路径为空'}
+            return {'ok': False, 'error': 'Path is empty'}
 
         # 检查起点和终点
         start_pos = tuple(path[0]) if not isinstance(path[0], tuple) else path[0]
         goal_pos = tuple(path[-1]) if not isinstance(path[-1], tuple) else path[-1]
 
         if start_pos != self.start:
-            return {'ok': False, 'error': f'路径起点不正确，期望{self.start}，实际{start_pos}'}
+            return {'ok': False, 'error': f'Path start incorrect, expected {self.start}, got {start_pos}'}
 
         if goal_pos != self.goal:
-            return {'ok': False, 'error': f'路径终点不正确，期望{self.goal}，实际{goal_pos}'}
+            return {'ok': False, 'error': f'Path goal incorrect, expected {self.goal}, got {goal_pos}'}
 
         # 检查路径连通性（相邻检查）
         for i in range(len(path) - 1):
@@ -41,24 +41,24 @@ class MazeValidator:
             dy = abs(next_pos[1] - current[1])
 
             if not ((dx == 1 and dy == 0) or (dx == 0 and dy == 1)):
-                return {'ok': False, 'error': f'路径不连通：{current} -> {next_pos}'}
+                return {'ok': False, 'error': f'Path disconnected: {current} -> {next_pos}'}
 
         # 检查路径上的点是否都在网格内且可通行
         for pos in path:
             pos_tuple = tuple(pos) if not isinstance(pos, tuple) else pos
             x, y = pos_tuple
             if not (0 <= x < self.height and 0 <= y < self.width):
-                return {'ok': False, 'error': f'路径点超出网格范围：{pos}'}
+                return {'ok': False, 'error': f'Path point out of bounds: {pos}'}
 
             if self.grid[x][y] != 0:
-                return {'ok': False, 'error': f'路径点为墙壁：{pos}'}
+                return {'ok': False, 'error': f'Path point is a wall: {pos}'}
 
         # 检查是否有重复访问（简单循环检测）
         seen = set()
         for pos in path:
             pos_tuple = tuple(pos)  # 转换为元组以便哈希
             if pos_tuple in seen:
-                return {'ok': False, 'error': f'路径存在重复点：{pos}'}
+                return {'ok': False, 'error': f'Path has duplicate point: {pos}'}
             seen.add(pos_tuple)
 
         # 计算路径效率指标
