@@ -22,7 +22,7 @@ mode: "text2d"  # text2d 或 image2d
 output_dir: "outputs_15x15/"  # 结果输出文件夹 
 # 迷宫生成配置
 generate_mazes: True  # 是否生成新的迷宫数据
-mazes_path: "mazes_15x15/"  # 迷宫数据路径（JSON/YAML文件或目录）如果不生成新的迷宫
+mazes_path: "mazes/"  # 迷宫数据路径（JSON/YAML文件或目录）如果不生成新的迷宫
 # 注意，测试时会使用目录中的所有迷宫
 maze_output_dir: "mazes_15x15/"  # 迷宫生成输出目录 如果生成新的迷宫
 maze_count: 5  # 生成的迷宫数量

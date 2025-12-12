@@ -84,7 +84,7 @@ class MazeEnvironment:
             Tuple[MazeState, Dict]: (新状态, 信息字典)
         """
         if self.state.done:
-            return self.state, {'info': '游戏已结束'}
+            return self.state, {'info': 'Game ended'}
 
         # 计算新位置
         y, x = self.state.position
@@ -97,17 +97,17 @@ class MazeEnvironment:
         elif action == 'right':
             new_pos = (y, x + 1)
         else:
-            return self.state, {'error': f'无效动作: {action}', 'valid_actions': ['up', 'down', 'left', 'right']}
+            return self.state, {'error': f'Invalid action: {action}', 'valid_actions': ['up', 'down', 'left', 'right']}
 
         # 检查边界
         height, width = self.grid.shape
         new_y, new_x = new_pos
         if not (0 <= new_y < height and 0 <= new_x < width):
-            return self.state, {'error': '撞墙了！超出边界', 'position': self.state.position}
+            return self.state, {'error': 'Wall collision: out of bounds', 'position': self.state.position}
 
         # 检查是否是墙壁
         if self.grid[new_y, new_x] == 1:
-            return self.state, {'error': '撞墙了！这是墙壁', 'position': self.state.position}
+            return self.state, {'error': 'Wall collision: hit wall', 'position': self.state.position}
 
         # 更新状态
         self.state.position = new_pos
@@ -116,7 +116,7 @@ class MazeEnvironment:
         # 检查是否到达终点
         if new_pos == self.goal:
             self.state.done = True
-            return self.state, {'success': True, 'message': f'恭喜！到达终点！总共走了{self.state.steps}步'}
+            return self.state, {'success': True, 'message': f'Congratulations! Reached goal in {self.state.steps} steps'}
 
         return self.state, {'success': True, 'position': new_pos}
 
@@ -131,10 +131,10 @@ class MazeEnvironment:
             Tuple[MazeState, Dict]: (新状态, 信息字典)
         """
         if self.state.done:
-            return self.state, {'info': '游戏已结束'}
+            return self.state, {'info': 'Game ended'}
 
         if not path:
-            return self.state, {'error': '路径为空'}
+            return self.state, {'error': 'Path is empty'}
 
         current_position = self.state.position
         valid_steps = 0
@@ -149,16 +149,16 @@ class MazeEnvironment:
 
             # 必须是相邻移动（上下左右），不允许跳步
             if not ((y_diff == 1 and x_diff == 0) or (y_diff == 0 and x_diff == 1)):
-                return self.state, {'error': f'跳步检测：从{current_position}到{pos}不是相邻移动', 'position': self.state.position}
+                return self.state, {'error': f'Invalid jump: {current_position} to {pos} is not adjacent', 'position': self.state.position}
 
             # 检查边界
             height, width = self.grid.shape
             if not (0 <= y < height and 0 <= x < width):
-                return self.state, {'error': f'撞墙检测：位置{pos}超出边界', 'position': self.state.position}
+                return self.state, {'error': f'Wall collision: position {pos} out of bounds', 'position': self.state.position}
 
             # 检查是否是墙壁
             if self.grid[y, x] == 1:
-                return self.state, {'error': f'撞墙检测：位置{pos}是墙壁', 'position': self.state.position}
+                return self.state, {'error': f'Wall collision: position {pos} is a wall', 'position': self.state.position}
 
             # 更新当前位置和有效步数
             current_position = pos
@@ -166,7 +166,7 @@ class MazeEnvironment:
 
         # 如果没有有效移动
         if valid_steps == 0:
-            return self.state, {'error': '无法移动到路径中的任何位置', 'position': self.state.position}
+            return self.state, {'error': 'Cannot move to any position in path', 'position': self.state.position}
 
         # 更新状态
         self.state.position = current_position
@@ -175,7 +175,7 @@ class MazeEnvironment:
         # 检查是否到达终点
         if current_position == self.goal:
             self.state.done = True
-            return self.state, {'success': True, 'message': f'恭喜！到达终点！总共走了{self.state.steps}步', 'steps_moved': valid_steps}
+            return self.state, {'success': True, 'message': f'Congratulations! Reached goal in {self.state.steps} steps', 'steps_moved': valid_steps}
 
         return self.state, {'success': True, 'position': current_position, 'steps_moved': valid_steps}
 
@@ -222,7 +222,7 @@ class MazeEnvironment:
             str: ASCII迷宫字符串
         """
         if self.maze_data is None:
-            return "迷宫未加载"
+            return "Maze not loaded"
 
         # 默认符号
         default_symbols = {

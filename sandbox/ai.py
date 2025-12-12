@@ -1,5 +1,5 @@
 """
-AI Sandbox - 让AI在迷宫中测试模型
+AI Sandbox - Test models in mazes
 """
 
 import sys
@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Tuple
 import json
 import time
 import traceback
-# 项目路径
+# Project path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .env import MazeEnvironment
@@ -18,18 +18,18 @@ import re
 
 
 def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dict[str, Any] = None) -> Dict[str, Any]:
-    """运行AI沙盒测试"""
-    # 如果没有提供配置，则加载默认配置
+    """Run AI sandbox test"""
+    # If no config provided, load default config
     if cfg is None:
         cfg = load_config()
         apply_env_keys(cfg)
 
-    # 默认参数
+    # Default parameters
     model = model or cfg.get('model', 'gpt-4')
     max_steps = max_steps or cfg.get('sandbox', {}).get('max_steps', 50)
-    memory = cfg.get('sandbox', {}).get('memory', 5)  # AI记忆长度
+    memory = cfg.get('sandbox', {}).get('memory', 5)  # AI memory length
 
-    # 读取符号配置和可视范围
+    # Read symbol config and visibility range
     symbols = cfg.get('sandbox', {}).get('symbols', {
         'wall': '█',
         'path': ' ',
@@ -40,18 +40,18 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
     })
     visibility = cfg.get('sandbox', {}).get('visibility', -1)
     
-    # 从config加载迷宫路径
+    # Load maze path from config
     mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
 
-    # 加载迷宫
+    # Load maze
     maze_path = Path(f"{mazes_path}/{maze}.json")
     if not maze_path.exists():
-        return {'error': f'迷宫不存在: {maze_path}'}
+        return {'error': f'Maze does not exist: {maze_path}'}
 
     env = MazeEnvironment(str(maze_path))
     env.reset()
 
-    # AI适配器 直接使用/Adapter中的方法
+    # AI adapter - directly use methods from /Adapter
     temperature = cfg.get('temperature', 0.1)
     adapter_cfg = {
         'PROVIDER': 'azure' if model.startswith('azure') else 'openai',
@@ -66,135 +66,135 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
     }
     adapter = get_adapter(adapter_cfg)
 
-    # ============ 新增：初始化统计信息 ============
+    # ============ New: Initialize statistics ============
     import time
-    start_total_time = time.perf_counter()  # 使用高精度计时器
+    start_total_time = time.perf_counter()  # Use high-precision timer
     
     stats = {
-        'api_calls': 0,                    # API调用次数
-        'errors': [],                      # 错误列表
-        'action_errors': [],               # 动作执行错误
-        'wall_collisions': 0,              # 撞墙次数
-        'invalid_jumps': 0,                # 跳步次数（非法移动）
-        'parse_errors': 0,                 # 解析错误
-        'total_response_time': 0.0,        # 总响应时间
-        'start_time': time.time(),         # 开始时间戳
-        'history': []                      # 详细历史记录
+        'api_calls': 0,                    # Number of API calls
+        'errors': [],                      # Error list
+        'action_errors': [],               # Action execution errors
+        'wall_collisions': 0,              # Number of wall collisions
+        'invalid_jumps': 0,                # Number of invalid jumps (illegal moves)
+        'parse_errors': 0,                 # Parse errors
+        'total_response_time': 0.0,        # Total response time
+        'start_time': time.time(),         # Start timestamp
+        'history': []                      # Detailed history
     }
     # ===========================================
 
-    # AI测试循环
+    # AI test loop
     history = []
-    action_memory = []  # 动作记忆列表，每个元素为 {'action': str, 'feedback': str}
-    print(f"开始AI测试 - 模型: {model}, 最大步数: {max_steps}, 记忆长度: {memory}")
-    print(f"迷宫: {maze}, 起始位置: {env.get_info()['current_position']}, 目标: {env.get_info()['goal']}")
+    action_memory = []  # Action memory list, each element is {'action': str, 'feedback': str}
+    print(f"Starting AI test - Model: {model}, Max steps: {max_steps}, Memory length: {memory}")
+    print(f"Maze: {maze}, Start position: {env.get_info()['current_position']}, Goal: {env.get_info()['goal']}")
     print("-" * 50)
 
     for step in range(max_steps):
         if env.state.done:
-            print(f"步骤 {step}: 任务已完成")
+            print(f"Step {step}: Task completed")
             break
 
-        # AI决策
+        # AI decision
         try:
             info = env.get_info()
-            print(f"步骤 {step + 1}: 当前位置 {info['current_position']}")
-            # 打印迷宫ASCII图
+            print(f"Step {step + 1}: Current position {info['current_position']}")
+            # Print maze ASCII diagram
             maze_ascii = env.render_tensor(symbols=symbols, visibility=visibility)
-            # print("当前迷宫状态:")
+            # print("Current maze state:")
             # print(maze_ascii)
 
-            # 构建记忆信息
+            # Build memory information
             memory_info = ""
             if memory != 0 and action_memory:
                 if memory == -1:
-                    # 全部记忆
+                    # All memories
                     memory_actions = action_memory
                 else:
-                    # 最近k次记忆
+                    # Recent k memories
                     memory_actions = action_memory[-memory:] if len(action_memory) > memory else action_memory
 
                 if memory_actions:
-                    memory_str = ", ".join([f"第{i+1}步:{mem['action']}({mem['feedback']})" for i, mem in enumerate(memory_actions)])
-                    memory_info = f"最近动作记录: {memory_str}。"
+                    memory_str = ", ".join([f"Step {i+1}: {mem['action']} ({mem['feedback']})" for i, mem in enumerate(memory_actions)])
+                    memory_info = f"Recent action history: {memory_str}. "
 
-            prompt = f"""你是一个迷宫专家，需要操控自己走到终点。当前位置A{info['current_position']},目标{info['goal']}。
-坐标格式：所有坐标都使用 (y, x) 格式，其中 y 是行号，x 是列号。
+            prompt = f"""You are a maze expert and need to navigate yourself to the goal. Current position A{info['current_position']}, goal {info['goal']}.
+Coordinate format: All coordinates use (y, x) format, where y is the row number and x is the column number.
 
-你可以：
-输出路径坐标：如 (1,2),(1,3),(2,3) - 坐标格式为 (y,x)
-注意：请你直接从下一个位置的坐标开始输出，不要输出与当前位置重复的坐标，且输出的坐标必须相邻
-提示：首先确认你的当前位置，然后你可以先移动到安全的位置，再做后续规划
-迷宫布局：
+You can:
+Output path coordinates: e.g., (1,2),(1,3),(2,3) - coordinate format is (y,x)
+Note: Please start outputting from the next position's coordinate, do not output coordinates that duplicate the current position, and the output coordinates must be adjacent
+Hint: First confirm your current position, then you can move to a safe position first, and then plan the next steps
+Maze layout:
 {maze_ascii}
-符号说明：
-- {symbols['wall']}：墙壁，不能穿过
-- {symbols['path']}：道路，可以通行
-- {symbols['start']}：起点（你已离开）
-- {symbols['goal']}：终点（目标位置）
-- {symbols['agent']}：当前位置（你所在位置）
-{memory_info}请你回复路径坐标序列：
+Symbol legend:
+- {symbols['wall']}: Wall, cannot pass through
+- {symbols['path']}: Path, can pass through
+- {symbols['start']}: Start position (you have left)
+- {symbols['goal']}: Goal position (target location)
+- {symbols['agent']}: Current position (your location)
+{memory_info}Please reply with the path coordinate sequence:
 """
 
             print(f"  Prompt: {prompt}")
             
-            # ============ 新增：记录API调用 ============
+            # ============ New: Record API call ============
             stats['api_calls'] += 1
             call_start_time = time.perf_counter()
             # ===========================================
             
             raw_response = adapter.generate(prompt)
             
-            # ============ 新增：记录响应时间 ============
+            # ============ New: Record response time ============
             call_duration = time.perf_counter() - call_start_time
             stats['total_response_time'] += call_duration
             # ===========================================
             
             duration = time.perf_counter() - call_start_time
-            print(f"  模型回复耗时: {duration:.2f} 秒")
+            print(f"  Model response time: {duration:.2f} seconds")
             response = raw_response.strip().lower()
 
-            # 尝试解析为路径坐标
+            # Try to parse as path coordinates
             path = parse_path_coordinates(response, info['current_position'])
             action = None
 
             if path:
-                # 路径坐标模式
-                action_desc = f"路径: {path}"
-                print(f"  AI决策: {action_desc}")
+                # Path coordinate mode
+                action_desc = f"Path: {path}"
+                print(f"  AI decision: {action_desc}")
             elif response in ['up', 'down', 'left', 'right']:
-                # 单个动作模式
+                # Single action mode
                 action = response
                 path = None
-                print(f"  AI决策: {action}")
+                print(f"  AI decision: {action}")
             else:
-                print(f"  输出违规，终止测试")
-                # 记录违规反馈到记忆中
-                action_memory.append({'action': response, 'feedback': '输出违规'})
+                print(f"  Invalid output, terminating test")
+                # Record invalid feedback to memory
+                action_memory.append({'action': response, 'feedback': 'Invalid output'})
                 
-                # ============ 新增：记录解析错误 ============
+                # ============ New: Record parse error ============
                 stats['parse_errors'] += 1
                 stats['errors'].append({
                     'step': step + 1,
                     'type': 'parse_error',
-                    'response': response[:100],  # 只记录前100个字符
+                    'response': response[:100],  # Only record first 100 characters
                     'timestamp': time.time(),
-                    'description': 'AI响应无法解析为有效动作或路径'
+                    'description': 'AI response cannot be parsed as valid action or path'
                 })
                 # ===========================================
                 
                 continue
                 
         except Exception as e:
-            print(f"  AI决策出错: {type(e).__name__}: {e}，终止测试")
-            print("=== 完整错误信息 ===")
-            print(f"错误类型: {type(e).__name__}")
-            print(f"错误消息: {str(e)}")
-            print("完整堆栈跟踪:")
+            print(f"  AI decision error: {type(e).__name__}: {e}, terminating test")
+            print("=== Complete error information ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print("Complete stack trace:")
             traceback.print_exc()
             print("===================")
             
-            # ============ 新增：记录AI决策错误 ============
+            # ============ New: Record AI decision error ============
             stats['errors'].append({
                 'step': step + 1,
                 'type': 'ai_decision_error',
@@ -206,40 +206,40 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
             
             break
 
-        # 执行动作或路径
+        # Execute action or path
         try:
             if path:
-                # 路径模式
+                # Path mode
                 state, step_info = env.step_path(path)
-                action_desc = f"路径移动: {path}"
-                print(f"  执行动作: {action_desc} -> 新位置: {state.position}")
+                action_desc = f"Path move: {path}"
+                print(f"  Execute action: {action_desc} -> New position: {state.position}")
             else:
-                # 单个动作模式
+                # Single action mode
                 state, step_info = env.step(action)
                 action_desc = action
-                print(f"  执行动作: {action} -> 新位置: {state.position}")
+                print(f"  Execute action: {action} -> New position: {state.position}")
 
-            # 确定反馈信息
+            # Determine feedback information
             feedback = ""
             if 'error' in step_info:
                 feedback = step_info['error']
-                print(f"  反馈: {feedback}")
+                print(f"  Feedback: {feedback}")
                 
-                # ============ 新增：记录动作执行错误 ============
-                position_before = info['current_position']  # 默认值
+                # ============ New: Record action execution error ============
+                position_before = info['current_position']  # Default value
     
-                # 简单提取 "(数字, 数字)" 格式
+                # Simple extraction of "(number, number)" format
                 import re
-                # 找所有 (y, x) 格式的坐标
+                # Find all (y, x) format coordinates
                 all_coords = re.findall(r'\((\d+),\s*(\d+)\)', feedback)
                 
                 if all_coords:
                     try:
-                        # 取第一个坐标作为 position_before
+                        # Take first coordinate as position_before
                         y, x = map(int, all_coords[0])
                         position_before = (y, x)
                     except:
-                        pass  # 如果转换失败，保持默认值
+                        pass  # If conversion fails, keep default value
                         
                 error_info = {
                     'step': step + 1,
@@ -251,7 +251,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
                     'position_after': state.position if not state.done else None
                 }
                 
-                # 分类错误类型
+                # Classify error type
                 if '墙' in feedback or 'wall' in feedback.lower():
                     stats['wall_collisions'] += 1
                     error_info['subtype'] = 'wall_collision'
@@ -259,7 +259,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
                     stats['invalid_jumps'] += 1
                     error_info['subtype'] = 'invalid_jump'
                 elif '超出' in feedback or '超出边界' in feedback:
-                    stats['wall_collisions'] += 1  # 超出边界也算撞墙
+                    stats['wall_collisions'] += 1  # Out of bounds also counts as wall collision
                     error_info['subtype'] = 'out_of_bounds'
                     
                 stats['action_errors'].append(error_info)
@@ -269,13 +269,13 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
             elif 'success' in step_info and step_info.get('success'):
                 if path:
                     steps_moved = step_info.get('steps_moved', 1)
-                    feedback = f"成功移动{steps_moved}步"
+                    feedback = f"Successfully moved {steps_moved} steps"
                 else:
-                    feedback = "成功移动"
+                    feedback = "Successfully moved"
             else:
-                feedback = "成功移动"
+                feedback = "Successfully moved"
 
-            # 更新动作记忆
+            # Update action memory
             action_memory.append({'action': action_desc, 'feedback': feedback})
 
             history.append({
@@ -285,11 +285,11 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
                 'feedback': feedback
             })
             
-            # ============ 新增：记录详细历史 ============
+            # ============ New: Record detailed history ============
             stats['history'].append({
                 'step': step + 1,
                 'api_call_duration': call_duration,
-                'response': response[:100],  # 截短响应
+                'response': response[:100],  # Truncate response
                 'action': action_desc,
                 'position_before': info['current_position'],
                 'position_after': state.position,
@@ -299,15 +299,15 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
             # ===========================================
 
             if state.done:
-                print(f"步骤 {step + 1}: 到达目标！")
-                # 更新最后一步的反馈为到达目标
+                print(f"Step {step + 1}: Reached goal!")
+                # Update last step feedback to goal reached
                 if action_memory:
-                    action_memory[-1]['feedback'] = "到达目标"
+                    action_memory[-1]['feedback'] = "Reached goal"
                 break
 
         except Exception as e:
-            print(f"  执行动作出错: {type(e).__name__}: {e}")
-            # ============ 新增：记录执行错误 ============
+            print(f"  Action execution error: {type(e).__name__}: {e}")
+            # ============ New: Record execution error ============
             stats['errors'].append({
                 'step': step + 1,
                 'type': 'execution_error',
@@ -321,18 +321,18 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
 
         print()
 
-    # ============ 新增：计算总时间 ============
+    # ============ New: Calculate total time ============
     total_time = time.perf_counter() - start_total_time
     # ===========================================
 
-    # 评估结果 - 增强结果字典
+    # Evaluate results - enhanced result dictionary
     result = {
         'success': env.state.done,
         'steps': env.state.steps,
         'path': [h['position'] for h in history],
         'actions': [h['action'] for h in history],
         
-        # ============ 新增：统计信息 ============
+        # ============ New: Statistics ============
         'stats': {
             'api_calls': stats['api_calls'],
             'errors': stats['errors'],
@@ -349,7 +349,7 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
             'history': stats['history']
         },
         
-        # 为了向后兼容，也提供顶级字段
+        # For backward compatibility, also provide top-level fields
         'api_calls': stats['api_calls'],
         'error_count': len(stats['errors']),
         'total_time': total_time,
@@ -363,37 +363,28 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
         # ===========================================
     }
 
-    # 保存结果 - 更新保存逻辑
+    # Save results - updated save logic
     Path("outputs").mkdir(exist_ok=True)
     result_file = f"outputs/ai_sandbox_{maze}_{model}_{int(time.time())}.json"
-    with open(result_file, 'w', encoding='utf-8') as f:  # 添加编码
-        json.dump(result, f, indent=2, ensure_ascii=False)  # 添加 ensure_ascii=False
+    with open(result_file, 'w', encoding='utf-8') as f:  # Add encoding
+        json.dump(result, f, indent=2, ensure_ascii=False)  # Add ensure_ascii=False
 
     result['result_file'] = result_file
     return result
 
-
-
-
-
-
-
-
-
-
 def parse_path_coordinates(response: str, current_position: Tuple[int, int] = None) -> List[Tuple[int, int]]:
     """
-    解析AI响应中的路径坐标，坐标格式为 (y, x)
+    Parse path coordinates from AI response, coordinate format is (y, x)
 
-    支持格式：
+    Supported formats:
     - (1,2),(3,4),(5,6)
     - (1, 2), (3, 4), (5, 6)
 
-    如果第一个坐标是当前自身坐标，会自动跳过
+    If the first coordinate is the current position, it will be automatically skipped
     """
     response = response.strip().lower()
 
-    # 使用正则表达式查找所有坐标对
+    # Use regex to find all coordinate pairs
     coord_pattern = r'\(\s*(\d+)\s*,\s*(\d+)\s*\)'
     matches = re.findall(coord_pattern, response)
 
@@ -405,203 +396,8 @@ def parse_path_coordinates(response: str, current_position: Tuple[int, int] = No
         except ValueError:
             continue
 
-    # 如果提供了当前坐标且路径第一个坐标是自身坐标，则跳过第一个坐标
+    # If current position is provided and first coordinate in path is current position, skip first coordinate
     if current_position and path and path[0] == current_position:
         path = path[1:]
 
     return path
-
-
-# def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dict[str, Any] = None) -> Dict[str, Any]:
-#     """运行AI沙盒测试"""
-#     # 如果没有提供配置，则加载默认配置
-#     if cfg is None:
-#         cfg = load_config()
-#         apply_env_keys(cfg)
-
-#     # 默认参数
-#     model = model or cfg.get('model', 'gpt-4')
-#     max_steps = max_steps or cfg.get('sandbox', {}).get('max_steps', 50)
-#     memory = cfg.get('sandbox', {}).get('memory', 5)  # AI记忆长度
-
-#     # 读取符号配置和可视范围
-#     symbols = cfg.get('sandbox', {}).get('symbols', {
-#         'wall': '█',
-#         'path': ' ',
-#         'start': 'S',
-#         'goal': 'G',
-#         'agent': 'A',
-#         'masked': '?'
-#     })
-#     visibility = cfg.get('sandbox', {}).get('visibility', -1)
-    
-#     # 从config加载迷宫路径
-#     mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
-
-#     # 加载迷宫
-#     maze_path = Path(f"{mazes_path}/{maze}.json")
-#     if not maze_path.exists():
-#         return {'error': f'迷宫不存在: {maze_path}'}
-
-#     env = MazeEnvironment(str(maze_path))
-#     env.reset()
-
-#     # AI适配器 直接使用/Adapter中的方法
-#     temperature = cfg.get('temperature', 0.1)
-#     adapter_cfg = {
-#         'PROVIDER': 'azure' if model.startswith('azure') else 'openai',
-#         'AZURE_OPENAI_API_KEY': cfg.get('AZURE_OPENAI_API_KEY', ''),
-#         'AZURE_OPENAI_ENDPOINT': cfg.get('AZURE_OPENAI_ENDPOINT', ''),
-#         'AZURE_OPENAI_DEPLOYMENT': cfg.get('AZURE_OPENAI_DEPLOYMENT', ''),
-#         'AZURE_OPENAI_API_VERSION': cfg.get('AZURE_OPENAI_API_VERSION', '2023-12-01-preview'),
-#         'OPENAI_API_KEY': cfg.get('OPENAI_API_KEY', ''),
-#         'OPENAI_API_BASE': cfg.get('OPENAI_API_BASE'),
-#         'model': model,
-#         'temperature': temperature
-#     }
-#     adapter = get_adapter(adapter_cfg)
-
-#     # AI测试循环
-#     history = []
-#     action_memory = []  # 动作记忆列表，每个元素为 {'action': str, 'feedback': str}
-#     print(f"开始AI测试 - 模型: {model}, 最大步数: {max_steps}, 记忆长度: {memory}")
-#     print(f"迷宫: {maze}, 起始位置: {env.get_info()['current_position']}, 目标: {env.get_info()['goal']}")
-#     print("-" * 50)
-
-#     for step in range(max_steps):
-#         if env.state.done:
-#             print(f"步骤 {step}: 任务已完成")
-#             break
-
-#         # AI决策
-#         try:
-#             info = env.get_info()
-#             print(f"步骤 {step + 1}: 当前位置 {info['current_position']}")
-#             # 打印迷宫ASCII图
-#             maze_ascii = env.render_tensor(symbols=symbols, visibility=visibility)
-#             # print("当前迷宫状态:")
-#             # print(maze_ascii)
-
-#             # 构建记忆信息
-#             memory_info = ""
-#             if memory != 0 and action_memory:
-#                 if memory == -1:
-#                     # 全部记忆
-#                     memory_actions = action_memory
-#                 else:
-#                     # 最近k次记忆
-#                     memory_actions = action_memory[-memory:] if len(action_memory) > memory else action_memory
-
-#                 if memory_actions:
-#                     memory_str = ", ".join([f"第{i+1}步:{mem['action']}({mem['feedback']})" for i, mem in enumerate(memory_actions)])
-#                     memory_info = f"最近动作记录: {memory_str}。"
-
-#             prompt = f"""你是一个迷宫专家，需要操控自己走到终点。当前位置A{info['current_position']},目标{info['goal']}。
-# 坐标格式：所有坐标都使用 (y, x) 格式，其中 y 是行号，x 是列号。
-
-# 你可以：
-# 输出路径坐标：如 (1,2),(1,3),(2,3) - 坐标格式为 (y,x)
-# 注意：请你直接从下一个位置的坐标开始输出，不要输出与当前位置重复的坐标，且输出的坐标必须相邻
-# 提示：首先确认你的当前位置，然后你可以先移动到安全的位置，再做后续规划
-# 迷宫布局：
-# {maze_ascii}
-# 符号说明：
-# - {symbols['wall']}：墙壁，不能穿过
-# - {symbols['path']}：道路，可以通行
-# - {symbols['start']}：起点（你已离开）
-# - {symbols['goal']}：终点（目标位置）
-# - {symbols['agent']}：当前位置（你所在位置）
-# {memory_info}请你回复路径坐标序列：
-# """
-
-#             print(f"  Prompt: {prompt}")
-#             start_time = time.perf_counter()
-#             raw_response = adapter.generate(prompt)
-#             duration = time.perf_counter() - start_time
-#             print(f"  模型回复耗时: {duration:.2f} 秒")
-#             response = raw_response.strip().lower()
-
-#             # 尝试解析为路径坐标
-#             path = parse_path_coordinates(response, info['current_position'])
-#             action = None
-
-#             if path:
-#                 # 路径坐标模式
-#                 action_desc = f"路径: {path}"
-#                 print(f"  AI决策: {action_desc}")
-#             elif response in ['up', 'down', 'left', 'right']:
-#                 # 单个动作模式
-#                 action = response
-#                 path = None
-#                 print(f"  AI决策: {action}")
-#             else:
-#                 print(f"  输出违规，终止测试")
-#                 # 记录违规反馈到记忆中
-#                 action_memory.append({'action': response, 'feedback': '输出违规'})
-#                 continue
-#         except Exception as e:
-#             print(f"  AI决策出错: {type(e).__name__}: {e}，终止测试")
-#             print("=== 完整错误信息 ===")
-#             print(f"错误类型: {type(e).__name__}")
-#             print(f"错误消息: {str(e)}")
-#             print("完整堆栈跟踪:")
-#             traceback.print_exc()
-#             print("===================")
-#             break
-
-#         # 执行动作或路径
-#         if path:
-#             # 路径模式
-#             state, step_info = env.step_path(path)
-#             action_desc = f"路径移动: {path}"
-#             print(f"  执行动作: {action_desc} -> 新位置: {state.position}")
-#         else:
-#             # 单个动作模式
-#             state, step_info = env.step(action)
-#             action_desc = action
-#             print(f"  执行动作: {action} -> 新位置: {state.position}")
-
-#         # 确定反馈信息
-#         feedback = ""
-#         if 'error' in step_info:
-#             feedback = step_info['error']
-#             print(f"  反馈: {feedback}")
-#         elif 'success' in step_info and step_info.get('success'):
-#             if path:
-#                 steps_moved = step_info.get('steps_moved', 1)
-#                 feedback = f"成功移动{steps_moved}步"
-#             else:
-#                 feedback = "成功移动"
-#         else:
-#             feedback = "成功移动"
-
-#         # 更新动作记忆
-#         action_memory.append({'action': action_desc, 'feedback': feedback})
-
-#         history.append({'step': step + 1, 'action': action_desc, 'position': state.position})
-
-#         if state.done:
-#             print(f"步骤 {step + 1}: 到达目标！")
-#             # 更新最后一步的反馈为到达目标
-#             if action_memory:
-#                 action_memory[-1]['feedback'] = "到达目标"
-#             break
-
-#         print()
-
-#     # 评估结果
-#     result = {
-#         'success': env.state.done,
-#         'steps': env.state.steps,
-#         'path': [h['position'] for h in history],
-#         'actions': [h['action'] for h in history]
-#     }
-
-#     # 保存结果
-#     Path("outputs").mkdir(exist_ok=True)
-#     result_file = f"outputs/ai_sandbox_{maze}_{model}_{int(time.time())}.json"
-#     with open(result_file, 'w') as f:
-#         json.dump(result, f, indent=2, ensure_ascii=False)
-
-#     result['result_file'] = result_file
-#     return result
