@@ -107,17 +107,48 @@ python run_sandbox.py cli --mazes-dir ./mazes
 
 ### 批量测试模型
 
+**迷宫目录结构：**
+```
+mazes/              # 迷宫父目录（可通过 --mazes-dir 指定）
+├── 5x5/            # 5x5 尺寸迷宫目录（精确匹配）
+│   ├── maze_5x5_0.json
+│   ├── maze_5x5_1.json
+│   └── ...
+├── mazes9x9/       # 9x9 尺寸迷宫目录（模糊匹配，包含"9x9"即可）
+│   ├── maze_9x9_0.json
+│   └── ...
+└── maze_15x15/     # 15x15 尺寸迷宫目录（模糊匹配）
+    └── ...
+```
+
+**目录名匹配规则：**
+- 优先精确匹配：如果存在与尺寸名完全相同的目录（如 `5x5/`），则使用该目录
+- 模糊匹配：如果精确匹配失败，会查找所有包含尺寸名的子目录（如 `mazes5x5/`、`maze_5x5/` 等）
+- 例如：指定 `--sizes 5x5` 时，可以匹配到 `5x5/`、`mazes5x5/`、`maze_5x5/` 等目录
+
+**使用示例：**
+
 ```bash
+# 从配置文件读取模型（推荐），测试三种迷宫大小，每迷宫10次测试
+python run_multi_test.py --sizes 5x5 9x9 15x15 --trials 10
+
 # 测试两个模型在三种迷宫大小上，每迷宫10次测试
-python multi_model_maze_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10
+python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10
 
 # 指定并发线程数
-python multi_model_maze_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
+python run_multi_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
 
-# 自定义输出目录
-python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_results
-        """
+# 自定义输出目录和迷宫目录
+python run_multi_test.py --models gpt-4 --sizes 9x9 --output-dir my_results --mazes-dir my_mazes
+
+# 完整示例：涵盖所有字段
+python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10 --workers 4 --output-dir my_results --mazes-dir mazes
+
 ```
+
+**注意：**
+- 如果未指定 `--models` 参数，程序会自动从配置文件（`config/config.yaml` 或 `config/local.yaml`）中读取 `model` 或 `models` 字段。配置文件中的 `model` 字段（单个模型）会被转换为列表使用。
+- 如果未指定 `--mazes-dir` 参数，程序会从配置文件的 `sandbox.mazes_path` 读取，如果配置中也没有，则默认使用 `mazes/` 目录。
 
 **API接口：**
 
