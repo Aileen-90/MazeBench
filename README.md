@@ -105,19 +105,18 @@ python run_sandbox.py cli --mazes-dir ./mazes
 - `p/path` - 显示最短路径
 - `q/quit` - 退出游戏
 
-### API模式 (AI模型)
-
-启动RESTful API服务器供AI模型调用：
+### 批量测试模型
 
 ```bash
-# 启动API服务器（推荐方式）
-python run_sandbox.py api
+# 测试两个模型在三种迷宫大小上，每迷宫10次测试
+python multi_model_maze_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10
 
-# 或直接运行模块
-python -m mazebench.sandbox.api
+# 指定并发线程数
+python multi_model_maze_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
 
-# 自定义配置
-python run_sandbox.py api --host 0.0.0.0 --port 8000 --mazes-dir ./mazes
+# 自定义输出目录
+python multi_model_maze_test.py --models gpt-4 --sizes 9x9 --output-dir my_results
+        """
 ```
 
 **API接口：**
