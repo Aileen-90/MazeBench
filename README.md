@@ -43,17 +43,20 @@ mazebench/
 ## 快速开始
 
 1. 安装依赖：
+
 ```bash
 pip install -r requirements.txt
 ```
 
 2. 配置API密钥：
+
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
 
 3. 配置迷宫生成（可选）：
-编辑 `config/config.yaml` 启用迷宫自动生成：
+   编辑 `config/config.yaml` 启用迷宫自动生成：
+
 ```yaml
 generate_mazes: true
 maze_count: 5
@@ -63,6 +66,7 @@ text2d:
 ```
 
 4. 运行评测：
+
 ```bash
 # 使用启动脚本（推荐）
 python run.py
@@ -87,6 +91,7 @@ MazeBench 提供了多种沙盒模式，支持真人玩家和AI模型进行交�
 使用命令行界面亲自体验迷宫，适合手动测试和调试。
 
 **启动命令：**
+
 ```bash
 # 基本启动（使用默认迷宫目录）
 python run_sandbox.py cli
@@ -99,9 +104,11 @@ python -m mazebench.sandbox.cli --mazes-dir ./mazes
 ```
 
 **参数说明：**
+
 - `--mazes-dir <目录>`: 指定迷宫文件所在目录（默认：从配置文件读取或使用 `mazes/`）
 
 **操作说明：**
+
 - `w/a/s/d` 或 `up/down/left/right` - 移动
 - `h/help` - 显示帮助
 - `r/reset` - 重置迷宫
@@ -110,99 +117,17 @@ python -m mazebench.sandbox.cli --mazes-dir ./mazes
 - `q/quit` - 退出游戏
 
 **配置参数（在 `config/config.yaml` 中）：**
+
 - `sandbox.visibility`: 可视范围（-1=全部地图，0=只看当前位置，正数=k格范围）
 - `sandbox.symbols`: 自定义迷宫渲染符号
 - `sandbox.mazes_path`: 默认迷宫路径
 
-### 2. API模式（RESTful API服务）
-
-提供HTTP API接口，允许AI模型通过HTTP请求与迷宫环境交互，适合远程调用和自动化测试。
-
-**启动命令：**
-```bash
-# 基本启动（默认：127.0.0.1:5000）
-python run_sandbox.py api
-
-# 自定义主机和端口
-python run_sandbox.py api --host 0.0.0.0 --port 8000
-
-# 启用调试模式
-python run_sandbox.py api --debug
-
-# 指定迷宫目录
-python run_sandbox.py api --mazes-dir ./mazes --port 8000
-```
-
-**参数说明：**
-- `--mazes-dir <目录>`: 指定迷宫文件目录（默认：从配置文件读取或使用 `mazes/`）
-- `--host <地址>`: 服务器主机地址（默认：`127.0.0.1`）
-- `--port <端口>`: 服务器端口（默认：`5000`）
-- `--debug`: 启用Flask调试模式
-
-**API接口：**
-
-| 方法 | 端点 | 描述 | 请求体/参数 |
-|------|------|------|------------|
-| GET | `/health` | 健康检查 | - |
-| GET | `/mazes` | 列出可用迷宫 | - |
-| POST | `/load` | 加载指定迷宫 | `{"maze_name": "maze_9x9_0"}` |
-| POST | `/reset` | 重置环境 | - |
-| POST | `/step` | 执行动作 | `{"action": "right"}` (up/down/left/right) |
-| GET | `/state` | 获取当前状态 | - |
-| GET | `/info` | 获取迷宫信息 | - |
-| GET | `/render` | 获取ASCII渲染 | `?show_path=true/false` |
-
-**使用示例：**
-
-```bash
-# 1. 启动API服务器
-python run_sandbox.py api --port 5000
-
-# 2. 在另一个终端使用curl测试
-# 列出可用迷宫
-curl http://localhost:5000/mazes
-
-# 加载迷宫
-curl -X POST http://localhost:5000/load \
-  -H "Content-Type: application/json" \
-  -d '{"maze_name": "maze_9x9_0"}'
-
-# 执行动作
-curl -X POST http://localhost:5000/step \
-  -H "Content-Type: application/json" \
-  -d '{"action": "right"}'
-
-# 获取状态
-curl http://localhost:5000/state
-
-# 获取ASCII渲染
-curl http://localhost:5000/render?show_path=true
-```
-
-**响应格式：**
-```json
-{
-  "action": "right",
-  "state": {
-    "position": [0, 1],
-    "done": false,
-    "steps": 1
-  },
-  "reward": -0.1,
-  "success": true,
-  "info": {
-    "current_position": [0, 1],
-    "goal": [8, 8],
-    "available_actions": ["up", "down", "left", "right"]
-  }
-}
-```
-
-### 3. AI模式（AI模型直接测试）
+### 2. AI模式（AI模型直接测试）
 
 AI模型直接与迷宫环境交互，适合批量测试和模型性能评估。AI可以看到完整地图，并使用坐标或方向指令进行移动。
 
 **启动命令：**
+
 ```bash
 # 使用默认配置（从配置文件读取模型和迷宫）
 python run_sandbox.py ai
@@ -218,11 +143,13 @@ python run_sandbox.py ai maze_15x15_0 --model gpt-3.5-turbo
 ```
 
 **参数说明：**
+
 - `maze` (位置参数): 迷宫名称，可选（如不指定则使用默认迷宫）
 - `--model <模型名>`: 指定AI模型（默认：从配置文件读取或 `gpt-4`）
 - `--max-steps <步数>`: 最大执行步数（默认：从配置文件读取或 `50`）
 
 **配置参数（在 `config/config.yaml` 中）：**
+
 - `sandbox.max_steps`: 最大步数（默认：`50`）
 - `sandbox.memory`: AI记忆长度，最近k次动作（默认：`5`，0=无记忆，-1=全部记忆）
 - `sandbox.visibility`: 可视范围（默认：`-1`，表示可见全部地图）
@@ -232,16 +159,18 @@ python run_sandbox.py ai maze_15x15_0 --model gpt-3.5-turbo
 - `temperature`: 模型温度参数
 
 **AI行为说明：**
+
 - AI可以看到完整迷宫地图（如果 `visibility=-1`）
 - AI可以输出路径坐标序列，如：`(1,2),(1,3),(2,3)`（使用 (y,x) 格式）
 - AI也可以输出单个方向指令：`up`, `down`, `left`, `right`
 - 结果会保存到 `outputs/ai_sandbox_{maze}_{model}_{timestamp}.json`
 
-### 4. Partial-Observe模式（部分观察模式）
+### 3. Partial-Observe模式（部分观察模式）
 
 AI模型在有限视野下探索迷宫，只能看到周围k个格子，视线会被墙壁阻挡。此模式更接近真实场景，AI不知道自己的坐标，只能通过方向+步数移动。
 
 **启动命令：**
+
 ```bash
 # 使用默认配置
 python run_sandbox.py partial-observe maze_9x9_0
@@ -254,11 +183,13 @@ python run_sandbox.py partial-observe maze_15x15_0 --model gpt-3.5-turbo --max-s
 ```
 
 **参数说明：**
+
 - `maze` (位置参数): 迷宫名称（可选，如不指定则使用默认迷宫）
 - `--model <模型名>`: 指定AI模型（默认：从配置文件读取）
 - `--max-steps <步数>`: 最大执行步数（默认：从配置文件读取）
 
 **配置参数（在 `config/config.yaml` 中）：**
+
 - `sandbox.max_steps`: 最大步数（默认：`50`）
 - `sandbox.memory`: AI记忆长度（默认：`5`）
 - `sandbox.visibility`: **必须为正数**（如：`3` 表示可见周围3格），这是部分观察模式的关键参数
@@ -266,6 +197,7 @@ python run_sandbox.py partial-observe maze_15x15_0 --model gpt-3.5-turbo --max-s
 - `sandbox.symbols`: 迷宫符号配置（`masked` 符号用于标记不可见区域）
 
 **AI行为说明：**
+
 - AI只能看到周围 `visibility` 格内的区域（曼哈顿距离）
 - 视线会被墙壁阻挡（无法看穿墙壁）
 - AI不知道自己的坐标和目标的坐标
@@ -274,6 +206,7 @@ python run_sandbox.py partial-observe maze_15x15_0 --model gpt-3.5-turbo --max-s
 - 结果保存格式与AI模式相同
 
 **可见性规则：**
+
 - 使用曼哈顿距离（上下左右移动的距离）判断是否在可视范围内
 - 如果从当前位置到目标位置的直线路径上有墙壁阻挡，则目标不可见
 - 墙壁本身如果可见，也会显示在视野中
@@ -299,6 +232,7 @@ sandbox:
 ```
 
 **配置优先级：**
+
 1. 命令行参数（最高优先级）
 2. 环境变量
 3. `config/local.yaml`（本地配置）
@@ -307,6 +241,7 @@ sandbox:
 ### 批量测试模型
 
 **迷宫目录结构：**
+
 ```
 mazes/              # 迷宫父目录（可通过 --mazes-dir 指定）
 ├── 5x5/            # 5x5 尺寸迷宫目录（精确匹配）
@@ -321,6 +256,7 @@ mazes/              # 迷宫父目录（可通过 --mazes-dir 指定）
 ```
 
 **目录名匹配规则：**
+
 - 优先精确匹配：如果存在与尺寸名完全相同的目录（如 `5x5/`），则使用该目录
 - 模糊匹配：如果精确匹配失败，会查找所有包含尺寸名的子目录（如 `mazes5x5/`、`maze_5x5/` 等）
 - 例如：指定 `--sizes 5x5` 时，可以匹配到 `5x5/`、`mazes5x5/`、`maze_5x5/` 等目录
@@ -346,6 +282,7 @@ python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --tr
 ```
 
 **注意：**
+
 - 如果未指定 `--models` 参数，程序会自动从配置文件（`config/config.yaml` 或 `config/local.yaml`）中读取 `model` 或 `models` 字段。配置文件中的 `model` 字段（单个模型）会被转换为列表使用。
 - 如果未指定 `--mazes-dir` 参数，程序会从配置文件的 `sandbox.mazes_path` 读取，如果配置中也没有，则默认使用 `mazes/` 目录。
 
