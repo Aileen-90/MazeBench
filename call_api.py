@@ -2,7 +2,7 @@
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key='6a9d3803-a391-4fb1-a526-14b9fcc0ae81', base_url='https://ark.cn-beijing.volces.com/api/v3')
+client = OpenAI()
 
 try:
     response = client.chat.completions.create(
