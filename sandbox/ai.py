@@ -54,7 +54,9 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
     # AI adapter - directly use methods from /Adapter
     temperature = cfg.get('temperature', 0.1)
     adapter_cfg = {
-        'PROVIDER': 'azure' if model.startswith('azure') else 'openai',
+        'PROVIDER': cfg.get('PROVIDER', 'openai').lower(),
+        'ARK_API_KEY': cfg.get('ARK_API_KEY', ''),
+        'ARK_API_BASE': cfg.get('ARK_API_BASE', ''),
         'AZURE_OPENAI_API_KEY': cfg.get('AZURE_OPENAI_API_KEY', ''),
         'AZURE_OPENAI_ENDPOINT': cfg.get('AZURE_OPENAI_ENDPOINT', ''),
         'AZURE_OPENAI_DEPLOYMENT': cfg.get('AZURE_OPENAI_DEPLOYMENT', ''),

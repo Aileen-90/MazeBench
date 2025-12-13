@@ -1,12 +1,13 @@
-# adapters/openai_adapter.py
+# adapters/ark_adapter.py
 import os
 from typing import Optional
-import openai
+import ark
+from volcenginesdkarkruntime import Ark
 import httpx
 from .base import BaseAdapter
 
-class OpenAIAdapter(BaseAdapter):
-    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1):
+class ArkAdapter(BaseAdapter):
+    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "ark-model", temperature: float = 0.1):
         # 使用httpx.Timeout设置更细粒度的超时控制
         # connect: 连接超时, read: 读取响应超时, write: 写入请求超时
         custom_timeout = httpx.Timeout(
@@ -15,7 +16,7 @@ class OpenAIAdapter(BaseAdapter):
             write=30.0,     # 30秒写入超时
             pool=30.0       # 30秒连接池超时
         )
-        self.client = openai.OpenAI(
+        self.client = Ark(
             api_key=api_key,
             base_url=api_base,
             timeout=custom_timeout,
@@ -25,7 +26,7 @@ class OpenAIAdapter(BaseAdapter):
         self.temperature = temperature
 
     def generate(self, prompt, image_path: Optional[str] = None) -> str:
-        """调用OpenAI API生成文本，可选图片输入"""
+        """调用Ark API生成文本，可选图片输入"""
         if isinstance(prompt, str):
             # prompt是字符串，转换为消息格式
             messages = [{"role": "user", "content": prompt}]
@@ -83,5 +84,8 @@ class OpenAIAdapter(BaseAdapter):
         #         "include_usage": True
         #     }
         # )
+
+        # 打印 AI 返回的内容到终端
+        # print("AI Response Content:", response)
 
         return response.choices[0].message.content

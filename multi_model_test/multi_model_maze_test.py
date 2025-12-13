@@ -129,6 +129,9 @@ class MultiModelMazeTester:
             dir_name = self._find_dir(maze_size)
             cfg['sandbox']['mazes_path'] = str(self.mazes_base_dir / dir_name) + "/"
 
+            # Set adapter to use Ark
+            cfg['PROVIDER'] = 'ark'
+            
             # 运行AI沙盒测试 - 现在会返回完整的统计信息
             result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
 
