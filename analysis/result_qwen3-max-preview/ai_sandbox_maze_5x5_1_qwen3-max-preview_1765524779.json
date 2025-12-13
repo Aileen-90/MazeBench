@@ -1,0 +1,55 @@
+{
+  "success": true,
+  "steps": 8,
+  "path": [
+    [
+      4,
+      4
+    ]
+  ],
+  "actions": [
+    "Path move: [(0, 1), (0, 2), (0, 3), (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)]"
+  ],
+  "stats": {
+    "api_calls": 1,
+    "errors": [],
+    "action_errors": [],
+    "error_count": 0,
+    "wall_collisions": 0,
+    "invalid_jumps": 0,
+    "parse_errors": 0,
+    "avg_response_time": 2.0710204000001795,
+    "total_response_time": 2.0710204000001795,
+    "total_time": 2.0816477999997005,
+    "start_time": 1765524776.9302008,
+    "end_time": 1765524779.0118582,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 2.0710204000001795,
+        "response": "(0,1),(0,2),(0,3),(0,4),(1,4),(2,4),(3,4),(4,4)",
+        "action": "Path move: [(0, 1), (0, 2), (0, 3), (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          4,
+          4
+        ],
+        "feedback": "Successfully moved 8 steps",
+        "timestamp": 1765524779.0117521
+      }
+    ]
+  },
+  "api_calls": 1,
+  "error_count": 0,
+  "total_time": 2.0816477999997005,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "maze": "maze_5x5_1",
+  "model": "qwen3-max-preview",
+  "max_steps": 50,
+  "timestamp": 1765524779.0118632
+}

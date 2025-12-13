@@ -1,0 +1,30 @@
+{
+  "model": "gpt-4",
+  "maze_size": "9x9",
+  "maze_name": "maze_9x9_4",
+  "trial_id": 1,
+  "success": false,
+  "steps": 0,
+  "total_steps": 0,
+  "error": null,
+  "timestamp": 1765642981.9503539,
+  "result_file": "outputs/ai_sandbox_maze_9x9_4_gpt-4_1765642981.json",
+  "api_calls": 1,
+  "total_time": 0.06213483301689848,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "error_count": 1,
+  "errors": [
+    {
+      "step": 1,
+      "type": "ai_decision_error",
+      "error_type": "NotFoundError",
+      "error_message": "Error code: 404 - {'error': {'code': 'InvalidEndpointOrModel.NotFound', 'message': 'The model or endpoint gpt-4 does not exist or you do not have access to it. Request id: 02176564298203615421203a6fd06a102a6153c85d0fbf47c762c', 'param': '', 'type': 'Not Found'}}",
+      "timestamp": 1765642981.949352
+    }
+  ],
+  "error_types": {
+    "ai_decision_error": 1
+  }
+}

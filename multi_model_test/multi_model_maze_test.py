@@ -28,6 +28,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from sandbox.ai import run_ai_sandbox
+from sandbox.partial_observe import run_ai_sandbox_partial_observe
 from utils.io import load_config, apply_env_keys
 from utils.logging import setup_logging, get_logger
 
@@ -39,7 +40,7 @@ class MultiModelMazeTester:
 
     def __init__(self, models: List[str], maze_sizes: List[str], trials_per_maze: int = 10,
                  max_workers: int = 4, output_base_dir: str = "multi_model_results",
-                 mazes_base_dir: str = None):
+                 mazes_base_dir: str = None, mode: str = 'ai'):
         """
         初始化测试器
 
@@ -50,12 +51,14 @@ class MultiModelMazeTester:
             max_workers: 最大并发线程数
             output_base_dir: 结果输出基础目录
             mazes_base_dir: 迷宫父目录（默认从配置文件读取或使用 'mazes'）
+            mode: 测试模式，'ai' 或 'partial-observe' (默认: 'ai')
         """
         self.models = models
         self.maze_sizes = maze_sizes
         self.trials_per_maze = trials_per_maze
         self.max_workers = max_workers
         self.output_base_dir = Path(output_base_dir)
+        self.run_test_func = {'ai': run_ai_sandbox, 'partial-observe': run_ai_sandbox_partial_observe}[mode]
 
         # 加载基础配置
         self.base_cfg = load_config()
@@ -133,7 +136,7 @@ class MultiModelMazeTester:
             cfg['PROVIDER'] = 'ark'
             
             # 运行AI沙盒测试 - 现在会返回完整的统计信息
-            result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
+            result = self.run_test_func(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
 
             # 提取统计信息
             stats = result.get('stats', {})
@@ -467,6 +470,9 @@ python run_multi_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
 # 自定义输出目录和迷宫目录
 python run_multi_test.py --models gpt-4 --sizes 9x9 --output-dir my_results --mazes-dir my_mazes
 
+# 使用部分观察模式
+python run_multi_test.py --models gpt-4 --sizes 9x9 --trials 10 --mode partial-observe
+
 # 完整示例：涵盖所有字段
 python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10 --workers 4 --output-dir my_results --mazes-dir mazes
         """
@@ -495,6 +501,10 @@ python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --tr
     parser.add_argument(
         '--mazes-dir', default='mazes/',
         help='迷宫父目录路径 (默认: 从配置文件读取或使用 mazes/)'
+    )
+    parser.add_argument(
+        '--mode', choices=['ai', 'partial-observe'], default='ai',
+        help='测试模式 (默认: ai)'
     )
 
     args = parser.parse_args()
@@ -533,7 +543,8 @@ python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --tr
         trials_per_maze=args.trials,
         max_workers=args.workers,
         output_base_dir=args.output_dir,
-        mazes_base_dir=args.mazes_dir
+        mazes_base_dir=args.mazes_dir,
+        mode=args.mode
     )
 
     start_time = time.time()

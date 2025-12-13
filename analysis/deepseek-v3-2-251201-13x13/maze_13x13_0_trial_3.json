@@ -1,0 +1,20 @@
+{
+  "model": "deepseek-v3-2-251201",
+  "maze_size": "13x13",
+  "maze_name": "maze_13x13_0",
+  "trial_id": 3,
+  "success": true,
+  "steps": 36,
+  "total_steps": 1,
+  "error": null,
+  "timestamp": 1765598267.1783302,
+  "result_file": "outputs/ai_sandbox_maze_13x13_0_deepseek-v3-2-251201_1765598267.json",
+  "api_calls": 1,
+  "total_time": 177.49850770000012,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "error_count": 0,
+  "errors": [],
+  "error_types": {}
+}

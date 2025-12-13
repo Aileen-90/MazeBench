@@ -1,0 +1,110 @@
+{
+  "success": true,
+  "steps": 12,
+  "path": [
+    [
+      0,
+      0
+    ],
+    [
+      4,
+      4
+    ]
+  ],
+  "actions": [
+    "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]",
+    "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]"
+  ],
+  "stats": {
+    "api_calls": 2,
+    "errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]",
+        "error_message": "Invalid jump: (2, 1) to (3, 0) is not adjacent",
+        "timestamp": 1765524832.1619937,
+        "position_before": [
+          2,
+          1
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "invalid_jump"
+      }
+    ],
+    "action_errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]",
+        "error_message": "Invalid jump: (2, 1) to (3, 0) is not adjacent",
+        "timestamp": 1765524832.1619937,
+        "position_before": [
+          2,
+          1
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "invalid_jump"
+      }
+    ],
+    "error_count": 1,
+    "wall_collisions": 0,
+    "invalid_jumps": 1,
+    "parse_errors": 0,
+    "avg_response_time": 2.1636364500000127,
+    "total_response_time": 4.327272900000025,
+    "total_time": 4.338537600000109,
+    "start_time": 1765524830.4307222,
+    "end_time": 1765524834.7692657,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 1.7262575999998262,
+        "response": "(0,1),(0,2),(1,2),(2,2),(2,1),(3,0),(4,0),(4,1),(4,2),(4,3),(4,4)",
+        "action": "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Invalid jump: (2, 1) to (3, 0) is not adjacent",
+        "timestamp": 1765524832.1620085
+      },
+      {
+        "step": 2,
+        "api_call_duration": 2.601015300000199,
+        "response": "(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)",
+        "action": "Path move: [(0, 1), (0, 2), (1, 2), (2, 2), (2, 1), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          4,
+          4
+        ],
+        "feedback": "Successfully moved 12 steps",
+        "timestamp": 1765524834.769224
+      }
+    ]
+  },
+  "api_calls": 2,
+  "error_count": 1,
+  "total_time": 4.338537600000109,
+  "wall_collisions": 0,
+  "invalid_jumps": 1,
+  "parse_errors": 0,
+  "maze": "maze_5x5_2",
+  "model": "qwen3-max-preview",
+  "max_steps": 50,
+  "timestamp": 1765524834.7692692
+}

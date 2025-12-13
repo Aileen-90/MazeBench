@@ -1,0 +1,55 @@
+{
+  "success": true,
+  "steps": 24,
+  "path": [
+    [
+      6,
+      6
+    ]
+  ],
+  "actions": [
+    "Path move: [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (1, 6), (2, 6), (2, 5), (2, 4), (2, 3), (2, 2), (2, 1), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6)]"
+  ],
+  "stats": {
+    "api_calls": 1,
+    "errors": [],
+    "action_errors": [],
+    "error_count": 0,
+    "wall_collisions": 0,
+    "invalid_jumps": 0,
+    "parse_errors": 0,
+    "avg_response_time": 3.2824563000003764,
+    "total_response_time": 3.2824563000003764,
+    "total_time": 3.285004299999855,
+    "start_time": 1765525327.1144679,
+    "end_time": 1765525330.3994782,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 3.2824563000003764,
+        "response": "(0,1),(0,2),(0,3),(0,4),(0,5),(0,6),(1,6),(2,6),(2,5),(2,4),(2,3),(2,2),(2,1),(2,0),(3,0),(4,0),(4,1",
+        "action": "Path move: [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (1, 6), (2, 6), (2, 5), (2, 4), (2, 3), (2, 2), (2, 1), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          6,
+          6
+        ],
+        "feedback": "Successfully moved 24 steps",
+        "timestamp": 1765525330.3993506
+      }
+    ]
+  },
+  "api_calls": 1,
+  "error_count": 0,
+  "total_time": 3.285004299999855,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "maze": "maze_7x7_3",
+  "model": "qwen3-max-preview",
+  "max_steps": 50,
+  "timestamp": 1765525330.3994908
+}

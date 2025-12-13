@@ -1,0 +1,47 @@
+{
+  "model": "doubao-seed-1-6-251015",
+  "maze_size": "15x15",
+  "maze_name": "maze_15x15_9",
+  "trial_id": 0,
+  "success": false,
+  "steps": 0,
+  "total_steps": 1,
+  "error": null,
+  "timestamp": 1765512374.9295459,
+  "result_file": "outputs/ai_sandbox_maze_15x15_9_doubao-seed-1-6-251015_1765512374.json",
+  "api_calls": 2,
+  "total_time": 579.7592316669761,
+  "wall_collisions": 0,
+  "invalid_jumps": 1,
+  "parse_errors": 0,
+  "error_count": 2,
+  "errors": [
+    {
+      "step": 1,
+      "type": "action_error",
+      "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (6, 8), (6, 9), (6, 10), (5, 10), (4, 10), (3, 10), (3, 11), (3, 12), (4, 12), (5, 12), (6, 12), (6, 13), (6, 14), (7, 14), (8, 14), (9, 14), (10, 14), (11, 14), (12, 14), (13, 14), (14, 14)]",
+      "error_message": "Invalid jump: (6, 6) to (6, 8) is not adjacent",
+      "timestamp": 1765511891.877256,
+      "position_before": [
+        6,
+        6
+      ],
+      "position_after": [
+        0,
+        0
+      ],
+      "subtype": "invalid_jump"
+    },
+    {
+      "step": 2,
+      "type": "ai_decision_error",
+      "error_type": "APITimeoutError",
+      "error_message": "Request timed out.",
+      "timestamp": 1765512374.928172
+    }
+  ],
+  "error_types": {
+    "action_error.invalid_jump": 1,
+    "ai_decision_error": 1
+  }
+}
