@@ -43,10 +43,39 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
     # Load maze path from config
     mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
 
-    # Load maze
-    maze_path = Path(f"{mazes_path}/{maze}.json")
-    if not maze_path.exists():
-        return {'error': f'Maze does not exist: {maze_path}'}
+    # Load maze - handle both full path and maze name
+    maze_path = None
+    maze_input = Path(maze)
+    
+    # If input contains path separators, treat it as a full path
+    if '/' in str(maze) or '\\' in str(maze):
+        # It's a path - check if it's a directory or file
+        if maze_input.is_dir():
+            # If it's a directory, list available mazes
+            json_files = list(maze_input.glob("*.json"))
+            if not json_files:
+                return {'error': f'No maze files found in directory: {maze}'}
+            # Use the first maze file
+            maze_path = json_files[0]
+        elif maze_input.exists():
+            # It's an existing file
+            maze_path = maze_input
+        elif (maze_input.parent / f"{maze_input.name}.json").exists():
+            # It's a path without .json extension
+            maze_path = maze_input.parent / f"{maze_input.name}.json"
+        else:
+            # Try with .json extension
+            maze_path = maze_input.with_suffix('.json')
+    else:
+        # It's just a maze name, use mazes_path from config
+        maze_path = Path(mazes_path) / f"{maze}.json"
+    
+    if not maze_path or not maze_path.exists():
+        # Provide helpful error message
+        if '/' in str(maze) or '\\' in str(maze):
+            return {'error': f'Maze does not exist: {maze_path}\n提示: 请检查路径是否正确，或使用迷宫文件名（如: maze_15x15_0）'}
+        else:
+            return {'error': f'Maze does not exist: {maze_path}\n提示: 迷宫文件应位于配置的 mazes_path 目录中: {mazes_path}'}
 
     env = MazeEnvironment(str(maze_path))
     env.reset()

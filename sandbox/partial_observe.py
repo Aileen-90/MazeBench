@@ -22,14 +22,64 @@ from adapters import get_adapter
 from utils.io import load_config, apply_env_keys
 
 
+def _get_line_points(start: Tuple[int, int], end: Tuple[int, int]) -> List[Tuple[int, int]]:
+    """
+    使用 Bresenham 直线算法获取从起点到终点的所有中间点（不包括起点和终点）
+    
+    Args:
+        start: 起点 (y, x)
+        end: 终点 (y, x)
+        
+    Returns:
+        List[Tuple[int, int]]: 路径上的所有中间点（不包括起点和终点）
+    """
+    y0, x0 = start
+    y1, x1 = end
+    
+    # 如果起点和终点相同，返回空列表
+    if y0 == y1 and x0 == x1:
+        return []
+    
+    points = []
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    
+    x, y = x0, y0
+    
+    # 使用标准的 Bresenham 算法，但跳过起点和终点
+    while True:
+        # 移动到下一个点
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x += sx
+        if e2 < dx:
+            err += dx
+            y += sy
+        
+        # 如果到达终点，停止（不包含终点）
+        if x == x1 and y == y1:
+            break
+        
+        # 添加到列表（不包含起点，因为我们在移动后才添加）
+        points.append((y, x))
+    
+    return points
+
+
 def _is_visible_with_wall_check(env: MazeEnvironment, pos: Tuple[int, int], visibility_range: int) -> bool:
     """
-    判断指定位置是否在可见范围内（曼哈顿距离+墙壁阻挡检查）
+    判断指定位置是否在可见范围内（曼哈顿距离+直线路径墙壁阻挡检查）
+    墙壁只要不被其他墙壁阻挡就可见
+    使用直线路径（包括斜向）检查是否有墙壁阻挡
     
     Args:
         env: 迷宫环境实例
         pos: 目标位置 (y, x)
-        visibility_range: 可见范围k
+        visibility_range: 可见范围k（使用曼哈顿距离）
         
     Returns:
         bool: 是否可见
@@ -37,7 +87,7 @@ def _is_visible_with_wall_check(env: MazeEnvironment, pos: Tuple[int, int], visi
     agent_y, agent_x = env.state.position
     target_y, target_x = pos
     
-    # 计算曼哈顿距离
+    # 计算曼哈顿距离（用于判断是否在可见范围内）
     manhattan_dist = abs(target_y - agent_y) + abs(target_x - agent_x)
     
     # 如果曼哈顿距离超过可见范围，不可见
@@ -48,22 +98,17 @@ def _is_visible_with_wall_check(env: MazeEnvironment, pos: Tuple[int, int], visi
     if manhattan_dist == 0:
         return True
     
-    # 路径检查：沿着曼哈顿路径检查是否有墙壁阻挡
-    # 先横向移动再纵向移动
-    current_y, current_x = agent_y, agent_x
+    # 使用直线路径检查是否有其他墙壁阻挡
+    # 获取从 agent 到目标位置的直线路径上的所有中间点（不包括起点和终点）
+    line_points = _get_line_points((agent_y, agent_x), (target_y, target_x))
     
-    # 先横向移动
-    while current_x != target_x:
-        current_x += 1 if current_x < target_x else -1
-        if env.grid[current_y, current_x] == 1:
+    # 检查路径上的每个点是否有墙壁阻挡
+    for y, x in line_points:
+        # 如果路径上有其他墙壁阻挡，目标位置不可见
+        if env.grid[y, x] == 1:
             return False
     
-    # 再纵向移动
-    while current_y != target_y:
-        current_y += 1 if current_y < target_y else -1
-        if env.grid[current_y, current_x] == 1:
-            return False
-    
+    # 路径上没有阻挡，目标位置可见（无论目标位置本身是否是墙壁）
     return True
 
 
@@ -225,10 +270,39 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
     # Load maze path from config
     mazes_path = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
 
-    # Load maze
-    maze_path = Path(f"{mazes_path}/{maze}.json")
-    if not maze_path.exists():
-        return {'error': f'Maze does not exist: {maze_path}'}
+    # Load maze - handle both full path and maze name
+    maze_path = None
+    maze_input = Path(maze)
+    
+    # If input contains path separators, treat it as a full path
+    if '/' in str(maze) or '\\' in str(maze):
+        # It's a path - check if it's a directory or file
+        if maze_input.is_dir():
+            # If it's a directory, list available mazes
+            json_files = list(maze_input.glob("*.json"))
+            if not json_files:
+                return {'error': f'No maze files found in directory: {maze}'}
+            # Use the first maze file
+            maze_path = json_files[0]
+        elif maze_input.exists():
+            # It's an existing file
+            maze_path = maze_input
+        elif (maze_input.parent / f"{maze_input.name}.json").exists():
+            # It's a path without .json extension
+            maze_path = maze_input.parent / f"{maze_input.name}.json"
+        else:
+            # Try with .json extension
+            maze_path = maze_input.with_suffix('.json')
+    else:
+        # It's just a maze name, use mazes_path from config
+        maze_path = Path(mazes_path) / f"{maze}.json"
+    
+    if not maze_path or not maze_path.exists():
+        # Provide helpful error message
+        if '/' in str(maze) or '\\' in str(maze):
+            return {'error': f'Maze does not exist: {maze_path}\n提示: 请检查路径是否正确，或使用迷宫文件名（如: maze_15x15_0）'}
+        else:
+            return {'error': f'Maze does not exist: {maze_path}\n提示: 迷宫文件应位于配置的 mazes_path 目录中: {mazes_path}'}
 
     env = MazeEnvironment(str(maze_path))
     env.reset()
@@ -317,11 +391,14 @@ Symbol legend:
 - {symbols['goal']}: Goal position (target location)
 - {symbols['agent']}: Current position (your location)
 - {symbols['masked']}: Unknown area (not visible)
-{memory_info}Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or "right 2, down 1"):
+{memory_info}
+Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or "right 2, down 1"):
 """
 
-            print(f"  Prompt: {prompt}")
-            
+            # print(f"  Prompt: {prompt}")
+            print(env.render_ascii(symbols=symbols))
+            print(memory_info)
+
             # ============ Record API call ============
             stats['api_calls'] += 1
             call_start_time = time.perf_counter()
@@ -539,7 +616,8 @@ Symbol legend:
 
     # Save results - updated save logic
     Path("outputs").mkdir(exist_ok=True)
-    result_file = f"outputs/ai_sandbox_{maze}_{model}_{int(time.time())}.json"
+    maze_name = maze_path.stem  # Use pure filename without path and extension
+    result_file = f"outputs/ai_sandbox_{maze_name}_{model}_{int(time.time())}.json"
     with open(result_file, 'w', encoding='utf-8') as f:  # Add encoding
         json.dump(result, f, indent=2, ensure_ascii=False)  # Add ensure_ascii=False
 

@@ -1,0 +1,894 @@
+{
+  "success": true,
+  "steps": 16,
+  "path": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      8,
+      8
+    ]
+  ],
+  "actions": [
+    "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7), (8, 8)]",
+    "Path move: [(0, 1)]",
+    "Path move: [(1, 0)]",
+    "Path move: [(1, 1)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 2)]",
+    "Path move: [(1, 1), (1, 0), (2, 0), (2, 0), (2, 0), (8, 8), (1, 0), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (6, 6), (6, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+    "Path move: [(1, 1), (1, 0), (2, 0), (0, 0), (0, 0), (1, 0), (1, 0), (0, 0), (2, 0), (1, 1), (0, 0), (2, 0), (1, 1), (2, 0), (8, 8), (1, 0), (8, 8), (1, 0), (0, 0), (0, 0), (0, 1), (0, 0), (2, 0), (2, 0), (2, 4), (2, 5), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (5, 6), (6, 6), (6, 6), (6, 6), (7, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6)]",
+    "Path move: [(1, 1), (1, 0), (2, 0), (1, 1), (0, 0), (2, 0), (0, 0), (8, 8), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+    "Path move: [(2, 0)]",
+    "Path move: [(2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]"
+  ],
+  "stats": {
+    "api_calls": 18,
+    "errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (3, 0) is a wall",
+        "timestamp": 1765526237.66033,
+        "position_before": [
+          3,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 2,
+        "type": "action_error",
+        "action": "Path move: [(0, 1)]",
+        "error_message": "Wall collision: position (0, 1) is a wall",
+        "timestamp": 1765526238.27693,
+        "position_before": [
+          0,
+          1
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 4,
+        "type": "action_error",
+        "action": "Path move: [(1, 1)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526239.8076031,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 5,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526240.5265656,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 6,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.2063375,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 7,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.9603562,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 8,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526242.5774899,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 9,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526243.209682,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 10,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526244.6273851,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 11,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526245.4388425,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 12,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526249.966931,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 13,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526250.6611767,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 14,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (2, 0), (2, 0), (8, 8), (1, 0), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (6, 6), (6, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526268.080966,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 15,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (0, 0), (0, 0), (1, 0), (1, 0), (0, 0), (2, 0), (1, 1), (0, 0), (2, 0), (1, 1), (2, 0), (8, 8), (1, 0), (8, 8), (1, 0), (0, 0), (0, 0), (0, 1), (0, 0), (2, 0), (2, 0), (2, 4), (2, 5), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (5, 6), (6, 6), (6, 6), (6, 6), (7, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526296.5474205,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 16,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (1, 1), (0, 0), (2, 0), (0, 0), (8, 8), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526314.6681268,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      }
+    ],
+    "action_errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (3, 0) is a wall",
+        "timestamp": 1765526237.66033,
+        "position_before": [
+          3,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 2,
+        "type": "action_error",
+        "action": "Path move: [(0, 1)]",
+        "error_message": "Wall collision: position (0, 1) is a wall",
+        "timestamp": 1765526238.27693,
+        "position_before": [
+          0,
+          1
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 4,
+        "type": "action_error",
+        "action": "Path move: [(1, 1)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526239.8076031,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 5,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526240.5265656,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 6,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.2063375,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 7,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.9603562,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 8,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526242.5774899,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 9,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526243.209682,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 10,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526244.6273851,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 11,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526245.4388425,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 12,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526249.966931,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 13,
+        "type": "action_error",
+        "action": "Path move: [(1, 2)]",
+        "error_message": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526250.6611767,
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "invalid_jump"
+      },
+      {
+        "step": 14,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (2, 0), (2, 0), (8, 8), (1, 0), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (6, 6), (6, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526268.080966,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 15,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (0, 0), (0, 0), (1, 0), (1, 0), (0, 0), (2, 0), (1, 1), (0, 0), (2, 0), (1, 1), (2, 0), (8, 8), (1, 0), (8, 8), (1, 0), (0, 0), (0, 0), (0, 1), (0, 0), (2, 0), (2, 0), (2, 4), (2, 5), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (5, 6), (6, 6), (6, 6), (6, 6), (7, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526296.5474205,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 16,
+        "type": "action_error",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (1, 1), (0, 0), (2, 0), (0, 0), (8, 8), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "error_message": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526314.6681268,
+        "position_before": [
+          1,
+          1
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "subtype": "wall_collision"
+      }
+    ],
+    "error_count": 15,
+    "wall_collisions": 6,
+    "invalid_jumps": 9,
+    "parse_errors": 0,
+    "avg_response_time": 4.642860238888918,
+    "total_response_time": 83.57148430000052,
+    "total_time": 83.62939560000086,
+    "start_time": 1765526235.030254,
+    "end_time": 1765526318.6596744,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 2.6276008000004367,
+        "response": "(1,0),(2,0),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0),(8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,7),(8,8)",
+        "action": "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (8, 1), (8, 2), (8, 3), (8, 4), (8, 5), (8, 6), (8, 7), (8, 8)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (3, 0) is a wall",
+        "timestamp": 1765526237.6603446
+      },
+      {
+        "step": 2,
+        "api_call_duration": 0.615299999999479,
+        "response": "(0,1)",
+        "action": "Path move: [(0, 1)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (0, 1) is a wall",
+        "timestamp": 1765526238.2769434
+      },
+      {
+        "step": 3,
+        "api_call_duration": 0.6060409000001528,
+        "response": "(1, 0)",
+        "action": "Path move: [(1, 0)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Successfully moved 1 steps",
+        "timestamp": 1765526238.8840156
+      },
+      {
+        "step": 4,
+        "api_call_duration": 0.9220419000002948,
+        "response": "(1,1)",
+        "action": "Path move: [(1, 1)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526239.8076134
+      },
+      {
+        "step": 5,
+        "api_call_duration": 0.7146065999995699,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526240.5266151
+      },
+      {
+        "step": 6,
+        "api_call_duration": 0.6771390000003521,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.2063482
+      },
+      {
+        "step": 7,
+        "api_call_duration": 0.7523706000001766,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526241.9603653
+      },
+      {
+        "step": 8,
+        "api_call_duration": 0.6158083000000261,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526242.5775044
+      },
+      {
+        "step": 9,
+        "api_call_duration": 0.6250016000003598,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526243.2097046
+      },
+      {
+        "step": 10,
+        "api_call_duration": 1.4078105999997206,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526244.6274
+      },
+      {
+        "step": 11,
+        "api_call_duration": 0.8103485000001456,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526245.4388587
+      },
+      {
+        "step": 12,
+        "api_call_duration": 4.526633800000127,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526249.9669468
+      },
+      {
+        "step": 13,
+        "api_call_duration": 0.6918538999998418,
+        "response": "(1, 2)",
+        "action": "Path move: [(1, 2)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Invalid jump: (1, 0) to (1, 2) is not adjacent",
+        "timestamp": 1765526250.661195
+      },
+      {
+        "step": 14,
+        "api_call_duration": 17.418206099999225,
+        "response": "(1, 1) is a wall, so i cannot move there. from current position a(1, 0), the only valid adjacent mov",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (2, 0), (2, 0), (8, 8), (1, 0), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (6, 6), (6, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526268.0810122
+      },
+      {
+        "step": 15,
+        "api_call_duration": 28.464352599999984,
+        "response": "(1, 1) is a wall, so i cannot move there. from current position a(1, 0), the only valid adjacent mov",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (0, 0), (0, 0), (1, 0), (1, 0), (0, 0), (2, 0), (1, 1), (0, 0), (2, 0), (1, 1), (2, 0), (8, 8), (1, 0), (8, 8), (1, 0), (0, 0), (0, 0), (0, 1), (0, 0), (2, 0), (2, 0), (2, 4), (2, 5), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (3, 4), (3, 4), (4, 4), (4, 4), (4, 4), (4, 5), (4, 6), (4, 6), (5, 6), (5, 6), (5, 6), (6, 6), (6, 6), (6, 6), (7, 6), (7, 6), (7, 6), (8, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526296.547438
+      },
+      {
+        "step": 16,
+        "api_call_duration": 18.118196700000226,
+        "response": "(1, 1) is a wall, so i cannot move there. from current position a(1, 0), the only valid adjacent mov",
+        "action": "Path move: [(1, 1), (1, 0), (2, 0), (1, 1), (0, 0), (2, 0), (0, 0), (8, 8), (2, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8), (2, 0), (2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          1,
+          0
+        ],
+        "feedback": "Wall collision: position (1, 1) is a wall",
+        "timestamp": 1765526314.668132
+      },
+      {
+        "step": 17,
+        "api_call_duration": 0.9188332000003356,
+        "response": "(2, 0)",
+        "action": "Path move: [(2, 0)]",
+        "position_before": [
+          1,
+          0
+        ],
+        "position_after": [
+          2,
+          0
+        ],
+        "feedback": "Successfully moved 1 steps",
+        "timestamp": 1765526315.5920973
+      },
+      {
+        "step": 18,
+        "api_call_duration": 3.0593392000000676,
+        "response": "(2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, ",
+        "action": "Path move: [(2, 1), (2, 2), (2, 3), (2, 4), (3, 4), (4, 4), (4, 5), (4, 6), (5, 6), (6, 6), (7, 6), (8, 6), (8, 7), (8, 8)]",
+        "position_before": [
+          2,
+          0
+        ],
+        "position_after": [
+          8,
+          8
+        ],
+        "feedback": "Successfully moved 14 steps",
+        "timestamp": 1765526318.6596174
+      }
+    ]
+  },
+  "api_calls": 18,
+  "error_count": 15,
+  "total_time": 83.62939560000086,
+  "wall_collisions": 6,
+  "invalid_jumps": 9,
+  "parse_errors": 0,
+  "maze": "maze_9x9_9",
+  "model": "qwen3-max-preview",
+  "max_steps": 50,
+  "timestamp": 1765526318.6597216
+}

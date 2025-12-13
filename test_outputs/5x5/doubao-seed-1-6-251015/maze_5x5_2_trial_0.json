@@ -1,0 +1,20 @@
+{
+  "model": "doubao-seed-1-6-251015",
+  "maze_size": "5x5",
+  "maze_name": "maze_5x5_2",
+  "trial_id": 0,
+  "success": true,
+  "steps": 12,
+  "total_steps": 1,
+  "error": null,
+  "timestamp": 1765511798.508171,
+  "result_file": "outputs/ai_sandbox_maze_5x5_2_doubao-seed-1-6-251015_1765511798.json",
+  "api_calls": 1,
+  "total_time": 24.86509712500265,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "error_count": 0,
+  "errors": [],
+  "error_types": {}
+}

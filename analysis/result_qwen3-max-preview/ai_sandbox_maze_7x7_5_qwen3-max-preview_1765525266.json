@@ -1,0 +1,322 @@
+{
+  "success": true,
+  "steps": 16,
+  "path": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      6,
+      6
+    ]
+  ],
+  "actions": [
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (1, 3), (1, 4), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), (6, 5), (6, 6)]",
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (3, 3), (3, 4), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+    "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6)]"
+  ],
+  "stats": {
+    "api_calls": 6,
+    "errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (1, 3), (1, 4), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (1, 3) is a wall",
+        "timestamp": 1765525254.7184875,
+        "position_before": [
+          1,
+          3
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 2,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525257.6828368,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 3,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (2, 3) is a wall",
+        "timestamp": 1765525259.8094838,
+        "position_before": [
+          2,
+          3
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 4,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (3, 3), (3, 4), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525261.8658502,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 5,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525263.895249,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      }
+    ],
+    "action_errors": [
+      {
+        "step": 1,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (1, 3), (1, 4), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (1, 3) is a wall",
+        "timestamp": 1765525254.7184875,
+        "position_before": [
+          1,
+          3
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 2,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525257.6828368,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 3,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (2, 3) is a wall",
+        "timestamp": 1765525259.8094838,
+        "position_before": [
+          2,
+          3
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 4,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (3, 3), (3, 4), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525261.8658502,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      },
+      {
+        "step": 5,
+        "type": "action_error",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "error_message": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525263.895249,
+        "position_before": [
+          3,
+          2
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "subtype": "wall_collision"
+      }
+    ],
+    "error_count": 5,
+    "wall_collisions": 5,
+    "invalid_jumps": 0,
+    "parse_errors": 0,
+    "avg_response_time": 2.2752113333332695,
+    "total_response_time": 13.651267999999618,
+    "total_time": 13.660233599999628,
+    "start_time": 1765525252.9646127,
+    "end_time": 1765525266.6248536,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 1.7516482999999425,
+        "response": "(1,0),(2,0),(2,1),(2,2),(1,2),(1,3),(1,4),(1,5),(2,5),(3,5),(4,5),(5,5),(6,5),(6,6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (1, 3), (1, 4), (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (1, 3) is a wall",
+        "timestamp": 1765525254.7185016
+      },
+      {
+        "step": 2,
+        "api_call_duration": 2.9632652000000235,
+        "response": "(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525257.682848
+      },
+      {
+        "step": 3,
+        "api_call_duration": 2.1254630999992514,
+        "response": "(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (2, 3), (3, 3), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (2, 3) is a wall",
+        "timestamp": 1765525259.8095
+      },
+      {
+        "step": 4,
+        "api_call_duration": 2.0549379000003682,
+        "response": "(1,0),(2,0),(2,1),(2,2),(3,2),(3,3),(3,4),(4,4),(5,4),(6,4),(6,5),(6,6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (3, 3), (3, 4), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525261.8658648
+      },
+      {
+        "step": 5,
+        "api_call_duration": 2.027965899999799,
+        "response": "(1,0),(2,0),(2,1),(2,2),(3,2),(4,2),(4,3),(4,4),(5,4),(6,4),(6,5),(6,6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          0,
+          0
+        ],
+        "feedback": "Wall collision: position (3, 2) is a wall",
+        "timestamp": 1765525263.8952615
+      },
+      {
+        "step": 6,
+        "api_call_duration": 2.727987600000233,
+        "response": "(1,0),(2,0),(2,1),(2,2),(1,2),(0,2),(0,3),(0,4),(0,5),(0,6),(1,6),(2,6),(3,6),(4,6),(5,6),(6,6)",
+        "action": "Path move: [(1, 0), (2, 0), (2, 1), (2, 2), (1, 2), (0, 2), (0, 3), (0, 4), (0, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          6,
+          6
+        ],
+        "feedback": "Successfully moved 16 steps",
+        "timestamp": 1765525266.6248214
+      }
+    ]
+  },
+  "api_calls": 6,
+  "error_count": 5,
+  "total_time": 13.660233599999628,
+  "wall_collisions": 5,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "maze": "maze_7x7_5",
+  "model": "qwen3-max-preview",
+  "max_steps": 50,
+  "timestamp": 1765525266.6248574
+}

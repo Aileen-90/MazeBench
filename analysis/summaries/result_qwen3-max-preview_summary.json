@@ -1,0 +1,921 @@
+{
+  "overview": {
+    "total_cases": 433,
+    "success": 254,
+    "success_rate": 0.5866,
+    "avg_steps": 20.02,
+    "avg_api_calls": 25.85,
+    "avg_api_calls_success": 8.82,
+    "total_time": 79031.08
+  },
+  "errors": {
+    "error_count": 9268,
+    "invalid_jumps": 1025,
+    "parse_errors": 1,
+    "wall_collisions": 8242
+  },
+  "by_size": {
+    "13x13": {
+      "total_cases": 99,
+      "success": 23,
+      "success_rate": 0.2323,
+      "avg_steps": 20.52,
+      "avg_api_calls": 41.01,
+      "avg_api_calls_success": 11.3,
+      "total_time": 29416.83,
+      "errors": {
+        "error_count": 3422,
+        "invalid_jumps": 437,
+        "parse_errors": 0,
+        "wall_collisions": 2985
+      },
+      "maze_counts": {
+        "maze_13x13_0": 10,
+        "maze_13x13_1": 10,
+        "maze_13x13_2": 10,
+        "maze_13x13_3": 10,
+        "maze_13x13_4": 9,
+        "maze_13x13_5": 10,
+        "maze_13x13_6": 10,
+        "maze_13x13_7": 10,
+        "maze_13x13_8": 10,
+        "maze_13x13_9": 10
+      },
+      "count_min": 9,
+      "count_max": 10,
+      "count_consistent": false
+    },
+    "5x5": {
+      "total_cases": 48,
+      "success": 48,
+      "success_rate": 1.0,
+      "avg_steps": 12.42,
+      "avg_api_calls": 2.54,
+      "avg_api_calls_success": 2.54,
+      "total_time": 544.49,
+      "errors": {
+        "error_count": 65,
+        "invalid_jumps": 2,
+        "parse_errors": 0,
+        "wall_collisions": 63
+      },
+      "maze_counts": {
+        "maze_5x5_0": 2,
+        "maze_5x5_1": 3,
+        "maze_5x5_2": 7,
+        "maze_5x5_3": 8,
+        "maze_5x5_4": 3,
+        "maze_5x5_5": 4,
+        "maze_5x5_6": 10,
+        "maze_5x5_7": 1,
+        "maze_5x5_8": 7,
+        "maze_5x5_9": 3
+      },
+      "count_min": 1,
+      "count_max": 10,
+      "count_consistent": false
+    },
+    "7x7": {
+      "total_cases": 92,
+      "success": 92,
+      "success_rate": 1.0,
+      "avg_steps": 20.39,
+      "avg_api_calls": 5.97,
+      "avg_api_calls_success": 5.97,
+      "total_time": 3981.17,
+      "errors": {
+        "error_count": 437,
+        "invalid_jumps": 28,
+        "parse_errors": 0,
+        "wall_collisions": 409
+      },
+      "maze_counts": {
+        "maze_7x7_0": 10,
+        "maze_7x7_1": 5,
+        "maze_7x7_2": 10,
+        "maze_7x7_3": 10,
+        "maze_7x7_4": 8,
+        "maze_7x7_5": 9,
+        "maze_7x7_6": 10,
+        "maze_7x7_7": 10,
+        "maze_7x7_8": 10,
+        "maze_7x7_9": 10
+      },
+      "count_min": 5,
+      "count_max": 10,
+      "count_consistent": false
+    },
+    "15x15": {
+      "total_cases": 97,
+      "success": 10,
+      "success_rate": 0.1031,
+      "avg_steps": 17.82,
+      "avg_api_calls": 48.84,
+      "avg_api_calls_success": 38.7,
+      "total_time": 33562.97,
+      "errors": {
+        "error_count": 3859,
+        "invalid_jumps": 246,
+        "parse_errors": 1,
+        "wall_collisions": 3612
+      },
+      "maze_counts": {
+        "maze_15x15_0": 10,
+        "maze_15x15_1": 10,
+        "maze_15x15_2": 9,
+        "maze_15x15_3": 10,
+        "maze_15x15_4": 8,
+        "maze_15x15_5": 10,
+        "maze_15x15_6": 10,
+        "maze_15x15_7": 10,
+        "maze_15x15_8": 10,
+        "maze_15x15_9": 10
+      },
+      "count_min": 8,
+      "count_max": 10,
+      "count_consistent": false
+    },
+    "9x9": {
+      "total_cases": 97,
+      "success": 81,
+      "success_rate": 0.8351,
+      "avg_steps": 25.13,
+      "avg_api_calls": 17.76,
+      "avg_api_calls_success": 11.4,
+      "total_time": 11525.61,
+      "errors": {
+        "error_count": 1485,
+        "invalid_jumps": 312,
+        "parse_errors": 0,
+        "wall_collisions": 1173
+      },
+      "maze_counts": {
+        "maze_9x9_0": 10,
+        "maze_9x9_1": 9,
+        "maze_9x9_2": 10,
+        "maze_9x9_3": 10,
+        "maze_9x9_4": 9,
+        "maze_9x9_5": 10,
+        "maze_9x9_6": 10,
+        "maze_9x9_7": 10,
+        "maze_9x9_8": 9,
+        "maze_9x9_9": 10
+      },
+      "count_min": 9,
+      "count_max": 10,
+      "count_consistent": false
+    }
+  },
+  "by_maze": {
+    "maze_13x13_1": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 0.0,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3760.03,
+      "errors": {
+        "error_count": 500,
+        "invalid_jumps": 31,
+        "parse_errors": 0,
+        "wall_collisions": 469
+      }
+    },
+    "maze_5x5_8": {
+      "total_cases": 7,
+      "success": 7,
+      "success_rate": 1.0,
+      "avg_steps": 16.0,
+      "avg_api_calls": 2.0,
+      "avg_api_calls_success": 2.0,
+      "total_time": 43.25,
+      "errors": {
+        "error_count": 7,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 7
+      }
+    },
+    "maze_13x13_6": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 16.8,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3886.77,
+      "errors": {
+        "error_count": 372,
+        "invalid_jumps": 55,
+        "parse_errors": 0,
+        "wall_collisions": 317
+      }
+    },
+    "maze_5x5_5": {
+      "total_cases": 4,
+      "success": 4,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 1.75,
+      "avg_api_calls_success": 1.75,
+      "total_time": 16.89,
+      "errors": {
+        "error_count": 3,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 3
+      }
+    },
+    "maze_7x7_2": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 40.8,
+      "avg_api_calls": 8.0,
+      "avg_api_calls_success": 8.0,
+      "total_time": 619.69,
+      "errors": {
+        "error_count": 59,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 59
+      }
+    },
+    "maze_15x15_7": {
+      "total_cases": 10,
+      "success": 3,
+      "success_rate": 0.3,
+      "avg_steps": 18.3,
+      "avg_api_calls": 47.9,
+      "avg_api_calls_success": 43.0,
+      "total_time": 4184.59,
+      "errors": {
+        "error_count": 441,
+        "invalid_jumps": 23,
+        "parse_errors": 0,
+        "wall_collisions": 418
+      }
+    },
+    "maze_9x9_9": {
+      "total_cases": 10,
+      "success": 9,
+      "success_rate": 0.9,
+      "avg_steps": 17.3,
+      "avg_api_calls": 29.9,
+      "avg_api_calls_success": 27.67,
+      "total_time": 900.13,
+      "errors": {
+        "error_count": 241,
+        "invalid_jumps": 164,
+        "parse_errors": 0,
+        "wall_collisions": 77
+      }
+    },
+    "maze_15x15_4": {
+      "total_cases": 8,
+      "success": 4,
+      "success_rate": 0.5,
+      "avg_steps": 26.0,
+      "avg_api_calls": 43.62,
+      "avg_api_calls_success": 37.25,
+      "total_time": 2508.27,
+      "errors": {
+        "error_count": 345,
+        "invalid_jumps": 6,
+        "parse_errors": 0,
+        "wall_collisions": 339
+      }
+    },
+    "maze_13x13_9": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 8.9,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 2497.39,
+      "errors": {
+        "error_count": 414,
+        "invalid_jumps": 114,
+        "parse_errors": 0,
+        "wall_collisions": 300
+      }
+    },
+    "maze_7x7_6": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 4.3,
+      "avg_api_calls_success": 4.3,
+      "total_time": 473.11,
+      "errors": {
+        "error_count": 32,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 32
+      }
+    },
+    "maze_15x15_5": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 5.5,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3462.58,
+      "errors": {
+        "error_count": 448,
+        "invalid_jumps": 16,
+        "parse_errors": 0,
+        "wall_collisions": 432
+      }
+    },
+    "maze_13x13_0": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 36.0,
+      "avg_api_calls": 9.9,
+      "avg_api_calls_success": 9.9,
+      "total_time": 528.68,
+      "errors": {
+        "error_count": 89,
+        "invalid_jumps": 1,
+        "parse_errors": 0,
+        "wall_collisions": 88
+      }
+    },
+    "maze_9x9_8": {
+      "total_cases": 9,
+      "success": 4,
+      "success_rate": 0.4444,
+      "avg_steps": 19.44,
+      "avg_api_calls": 41.44,
+      "avg_api_calls_success": 30.75,
+      "total_time": 3615.6,
+      "errors": {
+        "error_count": 336,
+        "invalid_jumps": 3,
+        "parse_errors": 0,
+        "wall_collisions": 333
+      }
+    },
+    "maze_5x5_9": {
+      "total_cases": 3,
+      "success": 3,
+      "success_rate": 1.0,
+      "avg_steps": 8.0,
+      "avg_api_calls": 1.0,
+      "avg_api_calls_success": 1.0,
+      "total_time": 9.63,
+      "errors": {
+        "error_count": 0,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    },
+    "maze_9x9_3": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 40.0,
+      "avg_api_calls": 3.2,
+      "avg_api_calls_success": 3.2,
+      "total_time": 170.35,
+      "errors": {
+        "error_count": 22,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 22
+      }
+    },
+    "maze_13x13_5": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 3.5,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3569.82,
+      "errors": {
+        "error_count": 466,
+        "invalid_jumps": 8,
+        "parse_errors": 0,
+        "wall_collisions": 458
+      }
+    },
+    "maze_15x15_8": {
+      "total_cases": 10,
+      "success": 2,
+      "success_rate": 0.2,
+      "avg_steps": 24.2,
+      "avg_api_calls": 47.1,
+      "avg_api_calls_success": 35.5,
+      "total_time": 3986.71,
+      "errors": {
+        "error_count": 413,
+        "invalid_jumps": 3,
+        "parse_errors": 0,
+        "wall_collisions": 410
+      }
+    },
+    "maze_5x5_2": {
+      "total_cases": 7,
+      "success": 7,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 2.29,
+      "avg_api_calls_success": 2.29,
+      "total_time": 60.96,
+      "errors": {
+        "error_count": 9,
+        "invalid_jumps": 2,
+        "parse_errors": 0,
+        "wall_collisions": 7
+      }
+    },
+    "maze_15x15_3": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 37.6,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 2543.75,
+      "errors": {
+        "error_count": 336,
+        "invalid_jumps": 11,
+        "parse_errors": 0,
+        "wall_collisions": 325
+      }
+    },
+    "maze_13x13_3": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 28.5,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3298.11,
+      "errors": {
+        "error_count": 382,
+        "invalid_jumps": 52,
+        "parse_errors": 0,
+        "wall_collisions": 330
+      }
+    },
+    "maze_9x9_6": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 8.2,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3466.72,
+      "errors": {
+        "error_count": 425,
+        "invalid_jumps": 117,
+        "parse_errors": 0,
+        "wall_collisions": 308
+      }
+    },
+    "maze_7x7_8": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 24.0,
+      "avg_api_calls": 2.0,
+      "avg_api_calls_success": 2.0,
+      "total_time": 66.18,
+      "errors": {
+        "error_count": 10,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 10
+      }
+    },
+    "maze_7x7_0": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 20.0,
+      "avg_api_calls": 10.5,
+      "avg_api_calls_success": 10.5,
+      "total_time": 948.11,
+      "errors": {
+        "error_count": 95,
+        "invalid_jumps": 3,
+        "parse_errors": 0,
+        "wall_collisions": 92
+      }
+    },
+    "maze_9x9_7": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 36.0,
+      "avg_api_calls": 19.5,
+      "avg_api_calls_success": 19.5,
+      "total_time": 1587.19,
+      "errors": {
+        "error_count": 185,
+        "invalid_jumps": 12,
+        "parse_errors": 0,
+        "wall_collisions": 173
+      }
+    },
+    "maze_9x9_0": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 36.0,
+      "avg_api_calls": 6.1,
+      "avg_api_calls_success": 6.1,
+      "total_time": 322.81,
+      "errors": {
+        "error_count": 51,
+        "invalid_jumps": 1,
+        "parse_errors": 0,
+        "wall_collisions": 50
+      }
+    },
+    "maze_7x7_7": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 24.0,
+      "avg_api_calls": 15.9,
+      "avg_api_calls_success": 15.9,
+      "total_time": 1124.59,
+      "errors": {
+        "error_count": 149,
+        "invalid_jumps": 12,
+        "parse_errors": 0,
+        "wall_collisions": 137
+      }
+    },
+    "maze_5x5_6": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 5.5,
+      "avg_api_calls_success": 5.5,
+      "total_time": 346.41,
+      "errors": {
+        "error_count": 36,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 36
+      }
+    },
+    "maze_13x13_7": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 8.6,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 4877.7,
+      "errors": {
+        "error_count": 453,
+        "invalid_jumps": 105,
+        "parse_errors": 0,
+        "wall_collisions": 348
+      }
+    },
+    "maze_9x9_4": {
+      "total_cases": 9,
+      "success": 9,
+      "success_rate": 1.0,
+      "avg_steps": 16.0,
+      "avg_api_calls": 4.56,
+      "avg_api_calls_success": 4.56,
+      "total_time": 123.72,
+      "errors": {
+        "error_count": 32,
+        "invalid_jumps": 6,
+        "parse_errors": 0,
+        "wall_collisions": 26
+      }
+    },
+    "maze_15x15_1": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 1.0,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 4296.62,
+      "errors": {
+        "error_count": 490,
+        "invalid_jumps": 23,
+        "parse_errors": 0,
+        "wall_collisions": 467
+      }
+    },
+    "maze_7x7_3": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 24.0,
+      "avg_api_calls": 1.1,
+      "avg_api_calls_success": 1.1,
+      "total_time": 40.63,
+      "errors": {
+        "error_count": 1,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 1
+      }
+    },
+    "maze_15x15_0": {
+      "total_cases": 10,
+      "success": 1,
+      "success_rate": 0.1,
+      "avg_steps": 15.5,
+      "avg_api_calls": 48.8,
+      "avg_api_calls_success": 38.0,
+      "total_time": 2930.58,
+      "errors": {
+        "error_count": 400,
+        "invalid_jumps": 24,
+        "parse_errors": 0,
+        "wall_collisions": 376
+      }
+    },
+    "maze_13x13_2": {
+      "total_cases": 10,
+      "success": 3,
+      "success_rate": 0.3,
+      "avg_steps": 33.6,
+      "avg_api_calls": 41.5,
+      "avg_api_calls_success": 21.67,
+      "total_time": 3106.92,
+      "errors": {
+        "error_count": 312,
+        "invalid_jumps": 12,
+        "parse_errors": 0,
+        "wall_collisions": 300
+      }
+    },
+    "maze_9x9_1": {
+      "total_cases": 9,
+      "success": 9,
+      "success_rate": 1.0,
+      "avg_steps": 16.0,
+      "avg_api_calls": 5.0,
+      "avg_api_calls_success": 5.0,
+      "total_time": 139.14,
+      "errors": {
+        "error_count": 36,
+        "invalid_jumps": 7,
+        "parse_errors": 0,
+        "wall_collisions": 29
+      }
+    },
+    "maze_15x15_6": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 22.7,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3082.21,
+      "errors": {
+        "error_count": 280,
+        "invalid_jumps": 14,
+        "parse_errors": 1,
+        "wall_collisions": 265
+      }
+    },
+    "maze_7x7_5": {
+      "total_cases": 9,
+      "success": 9,
+      "success_rate": 1.0,
+      "avg_steps": 16.0,
+      "avg_api_calls": 5.22,
+      "avg_api_calls_success": 5.22,
+      "total_time": 285.35,
+      "errors": {
+        "error_count": 38,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 38
+      }
+    },
+    "maze_13x13_8": {
+      "total_cases": 10,
+      "success": 1,
+      "success_rate": 0.1,
+      "avg_steps": 38.4,
+      "avg_api_calls": 47.1,
+      "avg_api_calls_success": 21.0,
+      "total_time": 3555.19,
+      "errors": {
+        "error_count": 368,
+        "invalid_jumps": 54,
+        "parse_errors": 0,
+        "wall_collisions": 314
+      }
+    },
+    "maze_15x15_2": {
+      "total_cases": 9,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 17.22,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 3583.8,
+      "errors": {
+        "error_count": 324,
+        "invalid_jumps": 30,
+        "parse_errors": 0,
+        "wall_collisions": 294
+      }
+    },
+    "maze_9x9_2": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 40.0,
+      "avg_api_calls": 14.3,
+      "avg_api_calls_success": 14.3,
+      "total_time": 994.09,
+      "errors": {
+        "error_count": 133,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 133
+      }
+    },
+    "maze_13x13_4": {
+      "total_cases": 9,
+      "success": 9,
+      "success_rate": 1.0,
+      "avg_steps": 32.0,
+      "avg_api_calls": 8.33,
+      "avg_api_calls_success": 8.33,
+      "total_time": 336.23,
+      "errors": {
+        "error_count": 66,
+        "invalid_jumps": 5,
+        "parse_errors": 0,
+        "wall_collisions": 61
+      }
+    },
+    "maze_5x5_4": {
+      "total_cases": 3,
+      "success": 3,
+      "success_rate": 1.0,
+      "avg_steps": 8.0,
+      "avg_api_calls": 1.0,
+      "avg_api_calls_success": 1.0,
+      "total_time": 4.51,
+      "errors": {
+        "error_count": 0,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    },
+    "maze_7x7_4": {
+      "total_cases": 8,
+      "success": 8,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 1.5,
+      "avg_api_calls_success": 1.5,
+      "total_time": 27.62,
+      "errors": {
+        "error_count": 4,
+        "invalid_jumps": 4,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    },
+    "maze_5x5_3": {
+      "total_cases": 8,
+      "success": 8,
+      "success_rate": 1.0,
+      "avg_steps": 16.0,
+      "avg_api_calls": 2.0,
+      "avg_api_calls_success": 2.0,
+      "total_time": 42.52,
+      "errors": {
+        "error_count": 8,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 8
+      }
+    },
+    "maze_15x15_9": {
+      "total_cases": 10,
+      "success": 0,
+      "success_rate": 0.0,
+      "avg_steps": 11.8,
+      "avg_api_calls": 50.0,
+      "avg_api_calls_success": 0.0,
+      "total_time": 2983.85,
+      "errors": {
+        "error_count": 382,
+        "invalid_jumps": 96,
+        "parse_errors": 0,
+        "wall_collisions": 286
+      }
+    },
+    "maze_9x9_5": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 20.0,
+      "avg_api_calls": 3.4,
+      "avg_api_calls_success": 3.4,
+      "total_time": 205.86,
+      "errors": {
+        "error_count": 24,
+        "invalid_jumps": 2,
+        "parse_errors": 0,
+        "wall_collisions": 22
+      }
+    },
+    "maze_7x7_9": {
+      "total_cases": 10,
+      "success": 10,
+      "success_rate": 1.0,
+      "avg_steps": 12.8,
+      "avg_api_calls": 6.4,
+      "avg_api_calls_success": 6.4,
+      "total_time": 381.81,
+      "errors": {
+        "error_count": 46,
+        "invalid_jumps": 6,
+        "parse_errors": 0,
+        "wall_collisions": 40
+      }
+    },
+    "maze_7x7_1": {
+      "total_cases": 5,
+      "success": 5,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 1.6,
+      "avg_api_calls_success": 1.6,
+      "total_time": 14.08,
+      "errors": {
+        "error_count": 3,
+        "invalid_jumps": 3,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    },
+    "maze_5x5_0": {
+      "total_cases": 2,
+      "success": 2,
+      "success_rate": 1.0,
+      "avg_steps": 12.0,
+      "avg_api_calls": 2.0,
+      "avg_api_calls_success": 2.0,
+      "total_time": 11.25,
+      "errors": {
+        "error_count": 2,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 2
+      }
+    },
+    "maze_5x5_7": {
+      "total_cases": 1,
+      "success": 1,
+      "success_rate": 1.0,
+      "avg_steps": 8.0,
+      "avg_api_calls": 1.0,
+      "avg_api_calls_success": 1.0,
+      "total_time": 3.32,
+      "errors": {
+        "error_count": 0,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    },
+    "maze_5x5_1": {
+      "total_cases": 3,
+      "success": 3,
+      "success_rate": 1.0,
+      "avg_steps": 8.0,
+      "avg_api_calls": 1.0,
+      "avg_api_calls_success": 1.0,
+      "total_time": 5.76,
+      "errors": {
+        "error_count": 0,
+        "invalid_jumps": 0,
+        "parse_errors": 0,
+        "wall_collisions": 0
+      }
+    }
+  }
+}

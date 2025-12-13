@@ -62,6 +62,36 @@ def run_ai(args):
     print(f"🎯 成功: {result['success']}, 步数: {result['steps']}, 结果: {result['result_file']}")
 
 
+def run_partial_observe(args):
+    """启动部分观察模式（Partial Observe Mode）"""
+    from sandbox.partial_observe import run_ai_sandbox_partial_observe
+
+    parser = argparse.ArgumentParser(description="AI Sandbox - Partial Observe Mode")
+    parser.add_argument("maze", nargs="?", help="迷宫名称")
+    parser.add_argument("--model", help="AI模型")
+    parser.add_argument("--max-steps", type=int, help="最大步数")
+
+    partial_args = parser.parse_args(args)
+
+    # 默认迷宫
+    if not partial_args.maze:
+        from sandbox.env import MazeEnvironment
+        mazes = MazeEnvironment.list_available_mazes()  # 从config读取路径
+        partial_args.maze = mazes[0] if mazes else None
+
+    if not partial_args.maze:
+        print("错误: 未找到可用迷宫")
+        return
+
+    result = run_ai_sandbox_partial_observe(partial_args.maze, partial_args.model, partial_args.max_steps)
+
+    if 'error' in result:
+        print(f"❌ {result['error']}")
+        return
+
+    print(f"🎯 成功: {result['success']}, 步数: {result['steps']}, 结果: {result['result_file']}")
+
+
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
@@ -91,17 +121,24 @@ def main():
   # AI模式覆盖默认配置
   python run_sandbox.py ai maze_9x9_0 --model gpt-3.5-turbo --max-steps 30
 
+  # 启动部分观察模式（AI只能看到周围k个格子）
+  python run_sandbox.py partial-observe maze_9x9_0
+
+  # 部分观察模式覆盖默认配置
+  python run_sandbox.py partial-observe maze_9x9_0 --model gpt-4 --max-steps 50
+
   # 查看详细帮助
   python run_sandbox.py cli --help
   python run_sandbox.py api --help
   python run_sandbox.py ai --help
+  python run_sandbox.py partial-observe --help
         """
     )
 
     parser.add_argument(
         'mode',
-        choices=['cli', 'api', 'ai'],
-        help='沙盒模式: cli(命令行交互), api(RESTful API), ai(AI模型测试)'
+        choices=['cli', 'api', 'ai', 'partial-observe'],
+        help='沙盒模式: cli(命令行交互), api(RESTful API), ai(AI模型测试), partial-observe(部分观察模式)'
     )
 
     # 解析已知参数，剩余参数传递给子命令
@@ -113,6 +150,8 @@ def main():
         run_api(remaining)
     elif args.mode == 'ai':
         run_ai(remaining)
+    elif args.mode == 'partial-observe':
+        run_partial_observe(remaining)
 
 
 if __name__ == '__main__':

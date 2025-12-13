@@ -1,0 +1,55 @@
+{
+  "success": true,
+  "steps": 24,
+  "path": [
+    [
+      6,
+      6
+    ]
+  ],
+  "actions": [
+    "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (0, 3), (0, 4), (1, 4), (2, 4), (2, 5), (2, 6), (3, 6), (4, 6), (4, 5), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]"
+  ],
+  "stats": {
+    "api_calls": 1,
+    "errors": [],
+    "action_errors": [],
+    "error_count": 0,
+    "wall_collisions": 0,
+    "invalid_jumps": 0,
+    "parse_errors": 0,
+    "avg_response_time": 156.32931689999896,
+    "total_response_time": 156.32931689999896,
+    "total_time": 156.33203630000025,
+    "start_time": 1765598309.2976255,
+    "end_time": 1765598465.6296673,
+    "history": [
+      {
+        "step": 1,
+        "api_call_duration": 156.32931689999896,
+        "response": "(1,0),(2,0),(3,0),(4,0),(4,1),(4,2),(3,2),(2,2),(1,2),(0,2),(0,3),(0,4),(1,4),(2,4),(2,5),(2,6),(3,6",
+        "action": "Path move: [(1, 0), (2, 0), (3, 0), (4, 0), (4, 1), (4, 2), (3, 2), (2, 2), (1, 2), (0, 2), (0, 3), (0, 4), (1, 4), (2, 4), (2, 5), (2, 6), (3, 6), (4, 6), (4, 5), (4, 4), (5, 4), (6, 4), (6, 5), (6, 6)]",
+        "position_before": [
+          0,
+          0
+        ],
+        "position_after": [
+          6,
+          6
+        ],
+        "feedback": "Successfully moved 24 steps",
+        "timestamp": 1765598465.6296177
+      }
+    ]
+  },
+  "api_calls": 1,
+  "error_count": 0,
+  "total_time": 156.33203630000025,
+  "wall_collisions": 0,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "maze": "maze_7x7_7",
+  "model": "deepseek-v3-2-251201",
+  "max_steps": 50,
+  "timestamp": 1765598465.629671
+}

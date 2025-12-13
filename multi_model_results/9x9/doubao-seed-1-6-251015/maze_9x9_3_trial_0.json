@@ -1,0 +1,215 @@
+{
+  "model": "doubao-seed-1-6-251015",
+  "maze_size": "9x9",
+  "maze_name": "maze_9x9_3",
+  "trial_id": 0,
+  "success": false,
+  "steps": 137,
+  "total_steps": 50,
+  "error": null,
+  "timestamp": 1765645158.090842,
+  "result_file": "outputs/ai_sandbox_maze_9x9_3_doubao-seed-1-6-251015_1765645158.json",
+  "api_calls": 50,
+  "total_time": 1097.1732431669952,
+  "wall_collisions": 12,
+  "invalid_jumps": 0,
+  "parse_errors": 0,
+  "error_count": 12,
+  "errors": [
+    {
+      "step": 4,
+      "type": "action_error",
+      "action": "Moves: up 2, up 1, up 2, up 2",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644146.46017,
+      "position_before": [
+        2,
+        8
+      ],
+      "position_after": [
+        0,
+        8
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 9,
+      "type": "action_error",
+      "action": "Moves: down 2, down 2, down 2",
+      "error_message": "Wall collision after 0 steps: Wall collision: hit wall",
+      "timestamp": 1765644263.331584,
+      "position_before": [
+        0,
+        8
+      ],
+      "position_after": [
+        2,
+        8
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 13,
+      "type": "action_error",
+      "action": "Moves: up 2, up 2, up 2",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644355.8794901,
+      "position_before": [
+        2,
+        8
+      ],
+      "position_after": [
+        0,
+        8
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 17,
+      "type": "action_error",
+      "action": "Moves: up 2, left 4, up 2, left 4, up 2, left 4, up 2, left 4",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644449.42343,
+      "position_before": [
+        2,
+        8
+      ],
+      "position_after": [
+        0,
+        4
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 24,
+      "type": "action_error",
+      "action": "Moves: left 3, down 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: hit wall",
+      "timestamp": 1765644598.594814,
+      "position_before": [
+        0,
+        8
+      ],
+      "position_after": [
+        0,
+        5
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 27,
+      "type": "action_error",
+      "action": "Moves: up 2, up 2, up 2",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644677.176325,
+      "position_before": [
+        2,
+        8
+      ],
+      "position_after": [
+        0,
+        8
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 29,
+      "type": "action_error",
+      "action": "Moves: left 3, up 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: hit wall",
+      "timestamp": 1765644723.865304,
+      "position_before": [
+        2,
+        7
+      ],
+      "position_after": [
+        2,
+        4
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 31,
+      "type": "action_error",
+      "action": "Moves: up 2, left 3, up 2, left 3, up 2, up 2, up 2, left 3, up 2, up 2, up 2",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644762.511627,
+      "position_before": [
+        2,
+        8
+      ],
+      "position_after": [
+        0,
+        5
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 35,
+      "type": "action_error",
+      "action": "Moves: left 3, down 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: hit wall",
+      "timestamp": 1765644850.157513,
+      "position_before": [
+        0,
+        5
+      ],
+      "position_after": [
+        0,
+        2
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 38,
+      "type": "action_error",
+      "action": "Moves: right 3, down 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: hit wall",
+      "timestamp": 1765644913.8878489,
+      "position_before": [
+        0,
+        1
+      ],
+      "position_after": [
+        0,
+        4
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 39,
+      "type": "action_error",
+      "action": "Moves: up 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765644948.275956,
+      "position_before": [
+        0,
+        4
+      ],
+      "position_after": [
+        0,
+        4
+      ],
+      "subtype": "wall_collision"
+    },
+    {
+      "step": 44,
+      "type": "action_error",
+      "action": "Moves: right 1",
+      "error_message": "Wall collision after 0 steps: Wall collision: out of bounds",
+      "timestamp": 1765645037.3401759,
+      "position_before": [
+        1,
+        8
+      ],
+      "position_after": [
+        1,
+        8
+      ],
+      "subtype": "wall_collision"
+    }
+  ],
+  "error_types": {
+    "action_error.wall_collision": 12
+  }
+}
