@@ -158,3 +158,9 @@ config/local.yaml
 debug/
 test_results/
 .cache/
+
+# 分析结果和测试输出（不应提交到仓库）
+analysis/
+multi_model_results/
+test_outputs/
+call_api.py
