@@ -368,6 +368,20 @@ class MazeEnvironment:
             mazes_dir = cfg.get('sandbox', {}).get('mazes_path', 'mazes/')
 
         mazes_path = Path(mazes_dir)
+        
+        # 如果路径不存在，尝试相对于项目根目录解析
+        if not mazes_path.exists():
+            # 获取项目根目录（假设 env.py 在 sandbox/ 目录下）
+            project_root = Path(__file__).parent.parent
+            # 如果路径是绝对路径但不存在，尝试作为相对路径
+            if mazes_path.is_absolute():
+                # 尝试去掉开头的 /，作为相对路径
+                relative_path = str(mazes_path).lstrip('/')
+                mazes_path = project_root / relative_path
+            else:
+                # 相对路径，相对于项目根目录
+                mazes_path = project_root / mazes_path
+        
         if not mazes_path.exists():
             return []
 

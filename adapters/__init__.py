@@ -12,20 +12,24 @@ def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
 
     temperature = cfg.get('temperature', 0.1)
 
+    enable_thinking = cfg.get('enable_thinking', False)
+    
     if provider == 'azure':
         return AzureAdapter(
             api_key=cfg.get('AZURE_OPENAI_API_KEY'),
             endpoint=cfg.get('AZURE_OPENAI_ENDPOINT'),
             deployment=cfg.get('AZURE_OPENAI_DEPLOYMENT'),
             api_version=cfg.get('AZURE_OPENAI_API_VERSION', '2023-12-01-preview'),
-            temperature=temperature
+            temperature=temperature,
+            enable_thinking=enable_thinking
         )
     elif provider == 'ark':
         return ArkAdapter(
             api_key=cfg.get('ARK_API_KEY'),
             api_base=cfg.get('ARK_API_BASE'),
             model=cfg.get('model', 'ark-model'),
-            temperature=temperature
+            temperature=temperature,
+            enable_thinking=enable_thinking
         )
     else:  # 默认openai
         model = cfg.get('model', 'gpt-4')
@@ -33,5 +37,6 @@ def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
             api_key=cfg.get('OPENAI_API_KEY'),
             api_base=cfg.get('OPENAI_API_BASE'),
             model=model,
-            temperature=temperature
+            temperature=temperature,
+            enable_thinking=enable_thinking
         )

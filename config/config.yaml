@@ -4,6 +4,7 @@
 # 模型配置
 model: "gpt-4"  # 使用的模型名称
 temperature: 0.1  # 模型生成温度参数，控制随机性 (0.0-2.0)
+enable_thinking: false  # 是否启用 thinking 模式（仅支持部分模型，如火山引擎的 deepseek）
 OPENAI_API_KEY: null  # OpenAI API密钥，可通过环境变量设置
 OPENAI_API_BASE: null  # OpenAI API基础URL，可选
 
@@ -54,6 +55,7 @@ sandbox:
   max_steps: 50  # AI测试最大步数
   memory: 10  # AI记忆长度（最近k次动作），0=无记忆，-1=全部记忆
   visibility: -1  # 可视范围：0=只能看见自己位置，-1=看见全部地图，正数=可视范围
+  max_no_exploration_steps: 20  # 连续未探索新区域的最大API调用次数
   mazes_path: "mazes_15x15/"  # 沙盒使用的迷宫路径
   symbols:  # 迷宫符号配置
     wall: "1"  # 墙壁符号

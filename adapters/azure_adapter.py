@@ -6,7 +6,7 @@ import httpx
 from .base import BaseAdapter
 
 class AzureAdapter(BaseAdapter):
-    def __init__(self, api_key: str, endpoint: str, deployment: str, api_version: str = "2023-12-01-preview", temperature: float = 0.1):
+    def __init__(self, api_key: str, endpoint: str, deployment: str, api_version: str = "2023-12-01-preview", temperature: float = 0.1, enable_thinking: bool = False):
         # 使用httpx.Timeout设置更细粒度的超时控制
         # connect: 连接超时, read: 读取响应超时, write: 写入请求超时
         custom_timeout = httpx.Timeout(
@@ -25,6 +25,7 @@ class AzureAdapter(BaseAdapter):
         )
         self.deployment = deployment
         self.temperature = temperature
+        self.enable_thinking = enable_thinking
 
     def generate(self, prompt, image_path: Optional[str] = None) -> str:
         """调用Azure OpenAI API生成文本，可选图片输入"""
@@ -64,11 +65,18 @@ class AzureAdapter(BaseAdapter):
                             ]
                         break
 
-        response = self.client.chat.completions.create(
-            model=self.deployment,
-            messages=messages,
-            max_tokens=1000,
-            temperature=self.temperature
-        )
+        # 构建 API 调用参数
+        create_params = {
+            "model": self.deployment,
+            "messages": messages,
+            "max_tokens": 1000,
+            "temperature": self.temperature
+        }
+        
+        # 只有当启用 thinking 模式时才添加 thinking 参数
+        if self.enable_thinking:
+            create_params["thinking"] = {"type": "enabled"}
+        
+        response = self.client.chat.completions.create(**create_params)
 
         return response.choices[0].message.content

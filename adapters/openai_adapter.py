@@ -6,7 +6,7 @@ import httpx
 from .base import BaseAdapter
 
 class OpenAIAdapter(BaseAdapter):
-    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1):
+    def __init__(self, api_key: str, api_base: Optional[str] = None, model: str = "gpt-4", temperature: float = 0.1, enable_thinking: bool = False):
         # 使用httpx.Timeout设置更细粒度的超时控制
         # connect: 连接超时, read: 读取响应超时, write: 写入请求超时
         custom_timeout = httpx.Timeout(
@@ -23,6 +23,7 @@ class OpenAIAdapter(BaseAdapter):
         )
         self.model = model
         self.temperature = temperature
+        self.enable_thinking = enable_thinking
 
     def generate(self, prompt, image_path: Optional[str] = None) -> str:
         """调用OpenAI API生成文本，可选图片输入"""
@@ -63,14 +64,21 @@ class OpenAIAdapter(BaseAdapter):
                             ]
                         break
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            max_tokens=1000,
-            temperature=self.temperature, 
-            # extra_body={"enable_thinking":True} # 百炼qwen3
-            thinking={"type":"enabled"} # 火山deepseek
-        )
+        # 构建 API 调用参数
+        create_params = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": 1000,
+            "temperature": self.temperature
+        }
+        
+        # 只有当启用 thinking 模式时才添加 thinking 参数
+        if self.enable_thinking:
+            create_params["thinking"] = {"type": "enabled"}  # 火山deepseek
+            # 如果需要支持百炼qwen3，可以使用：
+            # create_params["extra_body"] = {"enable_thinking": True}
+        
+        response = self.client.chat.completions.create(**create_params)
         # completion = client.chat.completions.create(
         #     model="qwen-plus", # 选择模型
         #     messages=[{"role": "user", "content": "你是谁"}],    

@@ -12,9 +12,11 @@ import traceback
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .env import MazeEnvironment
+from .exploration import ExplorationTracker
 from adapters import get_adapter
 from utils.io import load_config, apply_env_keys
 import re
+import numpy as np
 
 
 def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -80,6 +82,14 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
     env = MazeEnvironment(str(maze_path))
     env.reset()
 
+    # Initialize exploration tracker
+    max_no_exploration_steps = cfg.get('sandbox', {}).get('max_no_exploration_steps', 20)
+    start_position = env.state.position
+    exploration_tracker = ExplorationTracker(start_position, max_no_exploration_steps)
+    
+    # Calculate total reachable area (non-wall cells)
+    total_reachable = int(np.sum(env.grid == 0))
+
     # AI adapter - directly use methods from /Adapter
     temperature = cfg.get('temperature', 0.1)
     adapter_cfg = {
@@ -93,7 +103,8 @@ def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dic
         'OPENAI_API_KEY': cfg.get('OPENAI_API_KEY', ''),
         'OPENAI_API_BASE': cfg.get('OPENAI_API_BASE'),
         'model': model,
-        'temperature': temperature
+        'temperature': temperature,
+        'enable_thinking': cfg.get('enable_thinking', False)
     }
     adapter = get_adapter(adapter_cfg)
 
@@ -180,6 +191,11 @@ Symbol legend:
             call_duration = time.perf_counter() - call_start_time
             stats['total_response_time'] += call_duration
             # ===========================================
+            
+            # Check exploration failure after API call
+            if exploration_tracker.should_fail():
+                print(f"  Exploration failed: {exploration_tracker.no_exploration_count} consecutive API calls without exploring new area")
+                break
             
             duration = time.perf_counter() - call_start_time
             print(f"  Model response time: {duration:.2f} seconds")
@@ -306,6 +322,20 @@ Symbol legend:
             else:
                 feedback = "Successfully moved"
 
+            # Update exploration tracker
+            if 'error' not in step_info:
+                is_new = exploration_tracker.update(state.position)
+                if is_new:
+                    print(f"  Explored new area: {state.position} (Total explored: {exploration_tracker.get_explored_area()})")
+            else:
+                # If action failed, increment no exploration count
+                exploration_tracker.increment_no_exploration()
+            
+            # Print exploration rate every step
+            explored_area = exploration_tracker.get_explored_area()
+            exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+            print(f"  Exploration: {explored_area}/{total_reachable} ({exploration_rate*100:.2f}%)")
+
             # Update action memory
             action_memory.append({'action': action_desc, 'feedback': feedback})
 
@@ -356,9 +386,14 @@ Symbol legend:
     total_time = time.perf_counter() - start_total_time
     # ===========================================
 
+    # Calculate exploration metrics
+    explored_area = exploration_tracker.get_explored_area()
+    exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+    exploration_failed = exploration_tracker.should_fail()
+    
     # Evaluate results - enhanced result dictionary
     result = {
-        'success': env.state.done,
+        'success': env.state.done and not exploration_failed,
         'steps': env.state.steps,
         'path': [h['position'] for h in history],
         'actions': [h['action'] for h in history],
@@ -377,7 +412,11 @@ Symbol legend:
             'total_time': total_time,
             'start_time': stats['start_time'],
             'end_time': time.time(),
-            'history': stats['history']
+            'history': stats['history'],
+            'explored_area': explored_area,
+            'exploration_rate': exploration_rate,
+            'exploration_failed': exploration_failed,
+            'total_reachable': total_reachable
         },
         
         # For backward compatibility, also provide top-level fields
@@ -387,6 +426,9 @@ Symbol legend:
         'wall_collisions': stats['wall_collisions'],
         'invalid_jumps': stats['invalid_jumps'],
         'parse_errors': stats['parse_errors'],
+        'explored_area': explored_area,
+        'exploration_rate': exploration_rate,
+        'exploration_failed': exploration_failed,
         'maze': maze,
         'model': model,
         'max_steps': max_steps,
