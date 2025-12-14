@@ -324,16 +324,26 @@ Symbol legend:
 
             # Update exploration tracker
             if 'error' not in step_info:
-                is_new = exploration_tracker.update(state.position)
-                if is_new:
-                    print(f"  Explored new area: {state.position} (Total explored: {exploration_tracker.get_explored_area()})")
+                # 如果有路径信息，使用路径更新；否则只更新最终位置
+                if path:
+                    # 确保路径包含起始位置（当前位置）
+                    full_path = [info['current_position']] + path
+                    is_new = exploration_tracker.update_path(full_path)
+                    if is_new:
+                        new_count = len([p for p in full_path if p not in exploration_tracker.explored_positions])
+                        print(f"  Explored new area: {new_count} new positions along path (Total explored: {exploration_tracker.get_explored_area(env.grid)})")
+                else:
+                    # 单个动作，只更新最终位置
+                    is_new = exploration_tracker.update(state.position)
+                    if is_new:
+                        print(f"  Explored new area: {state.position} (Total explored: {exploration_tracker.get_explored_area(env.grid)})")
             else:
                 # If action failed, increment no exploration count
                 exploration_tracker.increment_no_exploration()
             
             # Print exploration rate every step
-            explored_area = exploration_tracker.get_explored_area()
-            exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+            explored_area = exploration_tracker.get_explored_area(env.grid)
+            exploration_rate = exploration_tracker.get_exploration_rate(total_reachable, env.grid)
             print(f"  Exploration: {explored_area}/{total_reachable} ({exploration_rate*100:.2f}%)")
 
             # Update action memory
@@ -387,16 +397,28 @@ Symbol legend:
     # ===========================================
 
     # Calculate exploration metrics
-    explored_area = exploration_tracker.get_explored_area()
-    exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+    explored_area = exploration_tracker.get_explored_area(env.grid)
+    exploration_rate = exploration_tracker.get_exploration_rate(total_reachable, env.grid)
     exploration_failed = exploration_tracker.should_fail()
+    
+    # Determine error type
+    success = env.state.done and not exploration_failed
+    error = None
+    if not success:
+        if env.state.steps >= max_steps:
+            error = 'max_steps_exceeded'
+        elif exploration_failed:
+            error = 'exploration_failed'
+        else:
+            error = 'unknown'
     
     # Evaluate results - enhanced result dictionary
     result = {
-        'success': env.state.done and not exploration_failed,
+        'success': success,
         'steps': env.state.steps,
         'path': [h['position'] for h in history],
         'actions': [h['action'] for h in history],
+        'error': error,
         
         # ============ New: Statistics ============
         'stats': {

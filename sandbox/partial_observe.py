@@ -171,16 +171,20 @@ def step_direction_steps(env: MazeEnvironment, direction: str, steps: int) -> Tu
         steps: 步数
         
     Returns:
-        Tuple[MazeState, Dict]: (新状态, 信息字典)
+        Tuple[MazeState, Dict]: (新状态, 信息字典)，Dict中包含'path'键，值为移动路径
     """
     if env.state.done:
-        return env.state, {'info': 'Game ended'}
+        return env.state, {'info': 'Game ended', 'path': []}
     
     if steps <= 0:
-        return env.state, {'error': f'Invalid steps: {steps}, must be positive'}
+        return env.state, {'error': f'Invalid steps: {steps}, must be positive', 'path': []}
     
     if direction not in ['up', 'down', 'left', 'right']:
-        return env.state, {'error': f'Invalid direction: {direction}'}
+        return env.state, {'error': f'Invalid direction: {direction}', 'path': []}
+    
+    # 记录移动路径（包括起始位置）
+    path = [env.state.position]  # 包含起始位置
+    start_position = env.state.position
     
     # 复用 env.step 连续执行 steps 步
     valid_steps = 0
@@ -191,14 +195,27 @@ def step_direction_steps(env: MazeEnvironment, direction: str, steps: int) -> Tu
             return env.state, {
                 'error': f'Wall collision after {valid_steps} steps: {step_info["error"]}',
                 'steps_moved': valid_steps,
-                'position': env.state.position
+                'position': env.state.position,
+                'path': path
             }
         
+        # 记录路径上的位置（移动后的新位置）
+        path.append(state.position)
         valid_steps = i + 1
         if state.done:
-            return state, {'success': True, 'steps_moved': valid_steps, 'message': step_info.get('message', '')}
+            return state, {
+                'success': True,
+                'steps_moved': valid_steps,
+                'message': step_info.get('message', ''),
+                'path': path
+            }
     
-    return env.state, {'success': True, 'steps_moved': valid_steps, 'position': env.state.position}
+    return env.state, {
+        'success': True,
+        'steps_moved': valid_steps,
+        'position': env.state.position,
+        'path': path
+    }
 
 
 def parse_direction_steps(response: str) -> List[Tuple[str, int]]:
@@ -209,6 +226,7 @@ def parse_direction_steps(response: str) -> List[Tuple[str, int]]:
     - up 3, right 2
     - up 3
     - right 2
+    - right3 (方向+数字连在一起)
     
     Args:
         response: AI返回的字符串
@@ -221,9 +239,16 @@ def parse_direction_steps(response: str) -> List[Tuple[str, int]]:
     # 方向列表
     directions = ['up', 'down', 'left', 'right']
     
-    # 匹配模式：方向 + 数字
-    pattern = r'\b(up|down|left|right)\s+(\d+)\b'
-    matches = re.findall(pattern, response)
+    # 匹配模式1：方向 + 空格 + 数字
+    pattern1 = r'\b(up|down|left|right)\s+(\d+)\b'
+    matches1 = re.findall(pattern1, response)
+    
+    # 匹配模式2：方向 + 数字（连在一起）
+    pattern2 = r'\b(up|down|left|right)(\d+)\b'
+    matches2 = re.findall(pattern2, response)
+    
+    # 合并两种模式的匹配结果
+    matches = matches1 + matches2
     
     result = []
     for direction, steps_str in matches:
@@ -407,8 +432,10 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
 
             # print(f"  Prompt: {prompt}")
             print(env.render_ascii(symbols=symbols))
+            print("Agent sight:")
+            print(maze_ascii)
             print(memory_info)
-
+        
             # ============ Record API call ============
             stats['api_calls'] += 1
             call_start_time = time.perf_counter()
@@ -439,7 +466,7 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
                 action_desc = f"Moves: {', '.join([f'{d} {s}' for d, s in moves])}"
                 print(f"  AI decision: {action_desc}")
             else:
-                print(f"  Invalid output, terminating test")
+                print(f"  Invalid output, continuing test")
                 # Record invalid feedback to memory
                 action_memory.append({'action': response, 'feedback': 'Invalid output'})
                 
@@ -482,6 +509,7 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
             position_before = info['current_position']
             total_steps_moved = 0
             last_error = None
+            all_paths = []  # 收集所有移动路径
             
             for direction, steps in moves:
                 if env.state.done:
@@ -492,9 +520,15 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
                 if 'error' in step_info:
                     last_error = step_info['error']
                     total_steps_moved += step_info.get('steps_moved', 0)
+                    # 即使出错，也记录已成功移动的路径
+                    if 'path' in step_info and step_info['path']:
+                        all_paths.extend(step_info['path'])
                     break
                 
                 total_steps_moved += step_info.get('steps_moved', steps)
+                # 收集路径
+                if 'path' in step_info and step_info['path']:
+                    all_paths.extend(step_info['path'])
                 
                 if state.done:
                     break
@@ -541,18 +575,29 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
             else:
                 feedback = f"Successfully moved {total_steps_moved} steps"
 
-            # Update exploration tracker
-            if not last_error:
+            # Update exploration tracker with path (即使失败也要更新已成功移动的部分)
+            explored_before = exploration_tracker.get_explored_area(env.grid)
+            if all_paths:
+                # 计算更新前的新位置数量
+                new_positions = [p for p in all_paths if p not in exploration_tracker.explored_positions]
+                is_new = exploration_tracker.update_path(all_paths)
+                if is_new:
+                    explored_after = exploration_tracker.get_explored_area(env.grid)
+                    print(f"  Explored new area: {len(new_positions)} new positions along path (Total explored: {explored_after})")
+            else:
+                # 如果没有路径信息，回退到只更新最终位置
                 is_new = exploration_tracker.update(state.position)
                 if is_new:
-                    print(f"  Explored new area: {state.position} (Total explored: {exploration_tracker.get_explored_area()})")
-            else:
-                # If action failed, increment no exploration count
+                    explored_after = exploration_tracker.get_explored_area(env.grid)
+                    print(f"  Explored new area: {state.position} (Total explored: {explored_after})")
+            
+            # 如果移动完全失败（没有任何成功移动），增加未探索计数
+            if last_error and total_steps_moved == 0:
                 exploration_tracker.increment_no_exploration()
             
             # Print exploration rate every step
-            explored_area = exploration_tracker.get_explored_area()
-            exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+            explored_area = exploration_tracker.get_explored_area(env.grid)
+            exploration_rate = exploration_tracker.get_exploration_rate(total_reachable, env.grid)
             print(f"  Exploration: {explored_area}/{total_reachable} ({exploration_rate*100:.2f}%)")
 
             # Update action memory
@@ -606,16 +651,28 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
     # ===========================================
 
     # Calculate exploration metrics
-    explored_area = exploration_tracker.get_explored_area()
-    exploration_rate = exploration_tracker.get_exploration_rate(total_reachable)
+    explored_area = exploration_tracker.get_explored_area(env.grid)
+    exploration_rate = exploration_tracker.get_exploration_rate(total_reachable, env.grid)
     exploration_failed = exploration_tracker.should_fail()
+
+    # Determine error type
+    success = env.state.done and not exploration_failed
+    error = None
+    if not success:
+        if env.state.steps >= max_steps:
+            error = 'max_steps_exceeded'
+        elif exploration_failed:
+            error = 'exploration_failed'
+        else:
+            error = 'unknown'
 
     # Evaluate results - enhanced result dictionary
     result = {
-        'success': env.state.done and not exploration_failed,
+        'success': success,
         'steps': env.state.steps,
         'path': [h['position'] for h in history],
         'actions': [h['action'] for h in history],
+        'error': error,
         
         # ============ Statistics ============
         'stats': {

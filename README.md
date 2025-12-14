@@ -276,15 +276,27 @@ python run_multi_test.py --models gpt-4 --sizes 5x5 --trials 5 --workers 2
 # 自定义输出目录和迷宫目录
 python run_multi_test.py --models gpt-4 --sizes 9x9 --output-dir my_results --mazes-dir my_mazes
 
-# 完整示例：涵盖所有字段
+# 使用 partial-observe 模式进行批量测试（部分观察模式）
+python run_multi_test.py --models gpt-4 --sizes 9x9 15x15 --trials 10 --mode partial-observe
+
+# partial-observe 模式完整示例
+python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10 --workers 4 --mode partial-observe --output-dir partial_observe_results
+
+# 完整示例：涵盖所有字段（默认 ai 模式）
 python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --trials 10 --workers 4 --output-dir my_results --mazes-dir mazes
 
 ```
+
+**测试模式说明：**
+
+- `--mode ai`（默认）：AI模式，模型可以看到完整地图，使用坐标或方向指令移动
+- `--mode partial-observe`：部分观察模式，模型只能看到周围k格，视线被墙壁阻挡，使用方向+步数移动
 
 **注意：**
 
 - 如果未指定 `--models` 参数，程序会自动从配置文件（`config/config.yaml` 或 `config/local.yaml`）中读取 `model` 或 `models` 字段。配置文件中的 `model` 字段（单个模型）会被转换为列表使用。
 - 如果未指定 `--mazes-dir` 参数，程序会从配置文件的 `sandbox.mazes_path` 读取，如果配置中也没有，则默认使用 `mazes/` 目录。
+- **使用 `partial-observe` 模式时**，请确保配置文件中 `sandbox.visibility` 设置为正数（如 `3`、`5` 等），表示可见范围。如果 `visibility` 不是正数，测试将失败并返回错误。
 
 ## 配置文件
 
