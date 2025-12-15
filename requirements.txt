@@ -8,3 +8,4 @@ jinja2>=3.0.0
 httpx>=0.24.0
 volcengine-python-sdk[ark]>=4.0.0
 flask>=2.0.0
+ark>=7.7.0
