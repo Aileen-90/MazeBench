@@ -410,8 +410,11 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
                     memory_str = ", ".join([f"Step {i+1}: {mem['action']} ({mem['feedback']})" for i, mem in enumerate(memory_actions)])
                     memory_info = f"Recent action history: {memory_str}. "
 
-            # Prompt设计：不包含坐标信息
             prompt = f"""You are a maze expert and need to navigate yourself to the goal. You can only see the surrounding {visibility} cells, and your vision cannot pass through walls. You do not know your current coordinates or the goal coordinates.
+
+IMPORTANT HINTS:
+- The goal is located in the bottom-right corner of the maze
+- If you stay in already explored positions for too long without exploring new areas, you will be judged as failed
 
 You can move by specifying direction and steps:
 - Direction: up, down, left, or right
@@ -723,4 +726,3 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
 
     result['result_file'] = result_file
     return result
-
