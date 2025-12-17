@@ -382,6 +382,7 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
     print(f"Maze: {maze}")
     print("-" * 50)
 
+    # 在循环开始处添加观察存储
     for step in range(max_steps):
         if env.state.done:
             print(f"Step {step}: Task completed")
@@ -396,19 +397,26 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
             visible_matrix = render_partial_observe(env, visibility, symbols)
             maze_ascii = '\n'.join(''.join(row) for row in visible_matrix)
 
-            # Build memory information
+            # Build observe-action pair memory
             memory_info = ""
             if memory != 0 and action_memory:
                 if memory == -1:
                     # All memories
-                    memory_actions = action_memory
+                    memory_pairs = action_memory
                 else:
                     # Recent k memories
-                    memory_actions = action_memory[-memory:] if len(action_memory) > memory else action_memory
+                    memory_pairs = action_memory[-memory:] if len(action_memory) > memory else action_memory
 
-                if memory_actions:
-                    memory_str = ", ".join([f"Step {i+1}: {mem['action']} ({mem['feedback']})" for i, mem in enumerate(memory_actions)])
-                    memory_info = f"Recent action history: {memory_str}. "
+                if memory_pairs:
+                    # 构建observe-action pair格式的记忆信息
+                    memory_pairs_str = []
+                    for i, pair in enumerate(memory_pairs):
+                        obs = pair['observation'].replace('\n', ' ')  # 将多行观察转换为一行
+                        action = pair['action']
+                        feedback = pair['feedback']
+                        memory_pairs_str.append(f"Step {i+1}: Observed: '{obs}' -> Action: '{action}' (Result: {feedback})")
+                    
+                    memory_info = "Recent observe-action history:\n" + "\n".join(memory_pairs_str) + "\n"
 
             prompt = f"""You are a maze expert and need to navigate yourself to the goal. You can only see the surrounding {visibility} cells, and your vision cannot pass through walls. You do not know your current coordinates or the goal coordinates.
 
@@ -424,7 +432,7 @@ You can move by specifying direction and steps:
 - Format: "direction steps", e.g., "up 3" or "right 2"
 - You can specify multiple moves separated by commas, e.g., "up 3, right 2"
 
-Visible maze layout (you are at position A):
+Current observation (you are at position A):
 {maze_ascii}
 Symbol legend:
 - {symbols['wall']}: Wall, cannot pass through
@@ -434,6 +442,8 @@ Symbol legend:
 - {symbols['agent']}: Current position (your location)
 - {symbols['masked']}: Unknown area (not visible)
 {memory_info}
+Based on your current observation and previous experience, what is your next move?
+
 Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or "right 2, down 1"):
 """
 
@@ -441,7 +451,9 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
             print(env.render_ascii(symbols=symbols))
             print("Agent sight:")
             print(maze_ascii)
-            print(memory_info)
+            if memory_info:
+                print("Memory information:")
+                print(memory_info)
         
             # ============ Record API call ============
             stats['api_calls'] += 1
@@ -474,8 +486,12 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
                 print(f"  AI decision: {action_desc}")
             else:
                 print(f"  Invalid output, continuing test")
-                # Record invalid feedback to memory
-                action_memory.append({'action': response, 'feedback': 'Invalid output'})
+                # Record invalid feedback to memory - 存储观察-行动对
+                action_memory.append({
+                    'observation': maze_ascii, 
+                    'action': response, 
+                    'feedback': 'Invalid output'
+                })
                 
                 # ============ Record parse error ============
                 stats['parse_errors'] += 1
@@ -607,8 +623,12 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
             exploration_rate = exploration_tracker.get_exploration_rate(total_reachable, env.grid)
             print(f"  Exploration: {explored_area}/{total_reachable} ({exploration_rate*100:.2f}%)")
 
-            # Update action memory
-            action_memory.append({'action': action_desc, 'feedback': feedback})
+            # Update action memory with observe-action pair
+            action_memory.append({
+                'observation': maze_ascii,
+                'action': action_desc,
+                'feedback': feedback
+            })
 
             history.append({
                 'step': step + 1, 
