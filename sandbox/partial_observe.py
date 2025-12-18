@@ -432,6 +432,8 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
             
             # 获取空间上下文
             spatial_context = spatial_memory.get_spatial_context(current_pos)
+            # 添加记忆总结信息到空间上下文
+            spatial_context['memory_summary'] = spatial_memory.get_memory_summary()
             spatial_info = _format_spatial_context(spatial_context)
 
             # Build observe-action pair memory
@@ -462,6 +464,9 @@ IMPORTANT HINTS:
 - The goal is located in the bottom-right corner of the maze 
 - Focus on exploring areas of the maze that you haven't visited yet 
 - If you stay in already explored positions for too long without exploring new areas, you will be judged as failed
+- When you encounter an intersection (岔路口), remember which directions you've explored and which are unexplored
+- If you reach a dead end, backtrack to the last intersection with unexplored paths
+- Use the detailed intersection analysis provided to make informed decisions about exploration priorities
 
 You can move by specifying direction and steps:
 - Direction: up, down, left, or right
@@ -486,7 +491,13 @@ Based on your current observation and previous experience, what is your next mov
 Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or "right 2, down 1"):
 """
 
-            # print(f"  Prompt: {prompt}")
+            # 打印发送给模型的完整提示词
+            print("=" * 60)
+            print("SENDING PROMPT TO MODEL:")
+            print("=" * 60)
+            print(prompt)
+            print("=" * 60)
+            
             print(env.render_ascii(symbols=symbols))
             print("Agent sight:")
             print(maze_ascii)
@@ -677,6 +688,14 @@ Please reply with your move(s) in the format "direction steps" (e.g., "up 3" or 
                 action_success, 
                 state.position
             )
+            
+            # 更新岔路口探索状态
+            if action_success:
+                # 如果移动成功，更新从岔路口出发的探索状态
+                spatial_memory.update_intersection_exploration(state.position, action_desc, True)
+            else:
+                # 如果移动失败，也记录失败状态
+                spatial_memory.update_intersection_exploration(position_before, action_desc, False)
 
             history.append({
                 'step': step + 1, 
@@ -841,5 +860,68 @@ def _format_spatial_context(spatial_context: dict) -> str:
             lines.append(f"- Current position value: High (explored {value} times)")
         else:
             lines.append(f"- Current position value: Low (good for exploration)")
+    
+    # 岔路口详细信息 - 增强版
+    if spatial_context.get('intersection_context'):
+        intersection = spatial_context['intersection_context']
+        lines.append("- Intersection Analysis:")
+        lines.append(f"  * Total intersections discovered: {intersection.get('total_intersections', 0)}")
+        lines.append(f"  * Intersection stack size: {intersection.get('intersection_stack_size', 0)}")
+        
+        if intersection['unvisited_directions']:
+            lines.append(f"  * Unexplored directions: {', '.join(intersection['unvisited_directions'])}")
+        if intersection['visited_directions']:
+            lines.append(f"  * Explored directions: {', '.join(intersection['visited_directions'])}")
+        
+        # 岔路口状态分析
+        if intersection['is_dead_end']:
+            lines.append("  * STATUS: This intersection leads to dead ends - consider backtracking")
+        elif not intersection['unvisited_directions'] and intersection['visited_directions']:
+            lines.append("  * STATUS: All directions explored from this intersection")
+        elif intersection['unvisited_directions']:
+            lines.append("  * STATUS: Continue exploring unvisited directions")
+            
+        if intersection['can_backtrack']:
+            lines.append(f"  * Backtrack available to intersection at {intersection['backtrack_target']}")
+            
+        # 添加探索建议
+        if intersection['unvisited_directions']:
+            lines.append(f"  * SUGGESTION: Prioritize exploring: {', '.join(intersection['unvisited_directions'])}")
+        elif intersection['can_backtrack']:
+            lines.append("  * SUGGESTION: All directions explored, consider backtracking")
+        else:
+            lines.append("  * SUGGESTION: No clear path forward, systematic exploration needed")
+            
+    elif spatial_context.get('backtrack_available'):
+        lines.append("- Backtrack recommendation: Return to previous intersection with unexplored paths")
+    
+    # 添加详细的岔路口栈信息
+    if spatial_context.get('intersection_context'):
+        intersection = spatial_context['intersection_context']
+        if intersection.get('intersection_stack_details'):
+            lines.append("- Intersection Stack Analysis:")
+            lines.append(f"  * Current depth in stack: {intersection.get('current_intersection_depth', 0)}")
+            lines.append(f"  * Stack contents (top to bottom):")
+            for i, stack_info in enumerate(reversed(intersection.get('intersection_stack_details', []))):
+                pos = stack_info['position']
+                unvisited = stack_info['unvisited_count']
+                visited = stack_info['visited_count']
+                dead_end = "DEAD END" if stack_info['is_dead_end'] else "ACTIVE"
+                if i == 0:
+                    lines.append(f"    → Current: Position {pos}, {unvisited} unvisited, {visited} visited, {dead_end}")
+                else:
+                    lines.append(f"      Level {i}: Position {pos}, {unvisited} unvisited, {visited} visited, {dead_end}")
+    
+    # 添加记忆统计信息
+    if spatial_context.get('memory_summary'):
+        summary = spatial_context['memory_summary']
+        lines.append("- Memory Statistics:")
+        lines.append(f"  * Total positions visited: {summary.get('total_positions', 0)}")
+        lines.append(f"  * Landmarks discovered: {summary.get('total_landmarks', 0)}")
+        lines.append(f"  * Exploration coverage: {summary.get('coverage_percentage', 0):.1f}%")
+        lines.append(f"  * Known dead ends: {summary.get('known_dead_ends', 0)}")
+        lines.append(f"  * Memory usage: {summary.get('memory_usage', 0):.1%}")
+        lines.append(f"  * Total intersections discovered: {summary.get('total_intersections', 0)}")
+        lines.append(f"  * Backtrack available: {'Yes' if summary.get('backtrack_available') else 'No'}")
     
     return "\n".join(lines) if len(lines) > 1 else ""

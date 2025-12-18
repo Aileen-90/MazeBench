@@ -92,4 +92,24 @@ class OpenAIAdapter(BaseAdapter):
         #     }
         # )
 
-        return response.choices[0].message.content
+        # 提取并打印思考过程
+        message = response.choices[0].message
+        
+        # 检查是否有思考过程（reasoning_content）
+        if hasattr(message, 'reasoning_content') and message.reasoning_content:
+            print("=" * 60)
+            print("MODEL REASONING CONTENT:")
+            print("=" * 60)
+            print(message.reasoning_content)
+            print("=" * 60)
+        
+        # 检查是否有思考字段在额外的字段中
+        elif hasattr(message, 'model_extra') and message.model_extra:
+            if 'reasoning_content' in message.model_extra:
+                print("=" * 60)
+                print("MODEL REASONING CONTENT (from model_extra):")
+                print("=" * 60)
+                print(message.model_extra['reasoning_content'])
+                print("=" * 60)
+
+        return message.content

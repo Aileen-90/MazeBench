@@ -37,6 +37,14 @@ class SpatialMemoryMap:
         self.successful_paths = []      # [{'path': [(y, x), ...], 'efficiency': float, 'timestamp': int, 'context': dict}]
         self.failed_attempts = []       # [{'position': (y, x), 'action': str, 'reason': str, 'timestamp': int}]
         
+
+
+        # 岔路口记忆和回溯功能
+        self.intersection_memory = {}   # {intersection_pos: {'visited_directions': set(), 'unvisited_directions': set(), 'is_dead_end': bool, 'path_from_intersection': []}}
+        self.current_path_from_intersection = []  # 当前从岔路口出发的路径
+        self.last_intersection = None   # 上一个岔路口位置
+        self.intersection_stack = []    # 岔路口栈，用于回溯
+        
         # Spatial learning
         self.position_values = {}       # {(y, x): {'exploration_value': float, 'strategic_value': float, 'danger_level': float}}
         self.action_outcomes = defaultdict(list)  # {(position, action): [{'success': bool, 'new_position': (y, x), 'timestamp': int}]}
@@ -141,6 +149,12 @@ class SpatialMemoryMap:
         # Identify landmarks
         if features['is_intersection'] or features['is_dead_end']:
             self._add_landmark(position, 'significant_junction' if features['is_intersection'] else 'dead_end')
+            
+        # 检测岔路口并初始化记忆
+        if features['is_intersection']:
+            access_directions = self.position_connections.get(position, {}).get('access_directions', set())
+            if access_directions:
+                self._record_intersection(position, access_directions)
     
     def _update_exploration_frontier(self, visible_positions: Set[Tuple[int, int]]):
         """Update the exploration frontier - positions adjacent to explored areas"""
@@ -274,10 +288,35 @@ class SpatialMemoryMap:
         """Get AI-recommended actions based on spatial memory"""
         recommendations = []
         
+        # 首先检查是否需要回溯
+        backtrack_target, backtrack_path = self.get_backtrack_target()
+        if backtrack_target and backtrack_target != position:
+            # 计算到回溯目标的方向和距离
+            direction = self._get_direction_to_position(position, backtrack_target)
+            distance = abs(backtrack_target[0] - position[0]) + abs(backtrack_target[1] - position[1])
+            
+            # 添加回溯建议
+            recommendations.append({
+                'action': f"{direction} {min(distance, 3)}",  # 建议移动1-3步
+                'position': backtrack_target,
+                'confidence': 0.9,
+                'reason': f"Backtrack to intersection with unexplored directions (distance: {distance})",
+                'expected_value': 1.0,
+                'is_backtrack': True
+            })
+        
         # Get connection info
         connections = self.position_connections.get(position, {})
         if not connections:
             return recommendations
+        
+        # 检查当前位置是否是岔路口
+        intersection_context = self.get_intersection_context(position)
+        if intersection_context:
+            # 在岔路口，优先推荐未探索的方向
+            unvisited_directions = set(intersection_context['unvisited_directions'])
+        else:
+            unvisited_directions = set()
         
         # Evaluate each possible direction
         for direction in connections.get('access_directions', []):
@@ -288,17 +327,26 @@ class SpatialMemoryMap:
             dy, dx = direction_vectors[direction]
             next_pos = (position[0] + dy, position[1] + dx)
             
+            # 如果在岔路口且这个方向已经探索过，降低优先级
+            is_visited_direction = direction in unvisited_directions and len(unvisited_directions) > 0
+            
             if next_pos in self.position_observations:
                 # Known position - use historical data
                 visit_count = self.position_observations[next_pos]['visit_count']
                 values = self.position_values.get(next_pos, {})
+                
+                # 如果是已访问过的方向且还有其他未探索方向，降低期望价值
+                expected_value = values.get('strategic_value', 0) - values.get('danger_level', 0)
+                if is_visited_direction and len(unvisited_directions) > 1:
+                    expected_value *= 0.3  # 大幅降低已探索方向的优先级
                 
                 recommendation = {
                     'action': f"{direction} 1",
                     'position': next_pos,
                     'confidence': 0.8 if values.get('danger_level', 0) < 0.3 else 0.4,
                     'reason': f"Known position (visited {visit_count} times)",
-                    'expected_value': values.get('strategic_value', 0) - values.get('danger_level', 0)
+                    'expected_value': expected_value,
+                    'is_explored_direction': True
                 }
             else:
                 # Unknown position - estimate value
@@ -309,23 +357,26 @@ class SpatialMemoryMap:
                     recommendation = {
                         'action': f"{direction} 1",
                         'position': next_pos,
-                        'confidence': 0.6,
-                        'reason': "Unexplored area with high estimated value",
-                        'expected_value': frontier_info['estimated_value']
+                        'confidence': 0.8 if direction in unvisited_directions else 0.6,
+                        'reason': "Unexplored area with high estimated value" + (" (unvisited direction)" if direction in unvisited_directions else ""),
+                        'expected_value': 1.2 if direction in unvisited_directions else frontier_info['estimated_value'],
+                        'is_unvisited_direction': direction in unvisited_directions
                     }
                 else:
+                    expected_value = 1.0 if direction in unvisited_directions else 0.5
                     recommendation = {
                         'action': f"{direction} 1",
                         'position': next_pos,
-                        'confidence': 0.3,
-                        'reason': "Unknown area",
-                        'expected_value': 0.5  # Neutral exploration value
+                        'confidence': 0.8 if direction in unvisited_directions else 0.3,
+                        'reason': "Unknown area" + (" (unvisited direction)" if direction in unvisited_directions else ""),
+                        'expected_value': expected_value,
+                        'is_unvisited_direction': direction in unvisited_directions
                     }
             
             recommendations.append(recommendation)
         
-        # Sort by expected value and confidence
-        recommendations.sort(key=lambda x: (x['expected_value'], x['confidence']), reverse=True)
+        # Sort by expected value and confidence, 优先回溯和未探索方向
+        recommendations.sort(key=lambda x: (x.get('is_backtrack', False), x.get('is_unvisited_direction', False), x['expected_value'], x['confidence']), reverse=True)
         return recommendations
     
     def _calculate_distance_from_start(self, position: Tuple[int, int]) -> int:
@@ -365,6 +416,90 @@ class SpatialMemoryMap:
             value -= 0.3
         
         return min(1.0, max(0.0, value))
+    
+    def _record_intersection(self, position: Tuple[int, int], access_directions: Set[str]):
+        """记录岔路口信息"""
+        if position not in self.intersection_memory:
+            # 新岔路口，初始化记忆
+            self.intersection_memory[position] = {
+                'visited_directions': set(),
+                'unvisited_directions': access_directions.copy(),
+                'is_dead_end': False,
+                'path_from_intersection': [],
+                'timestamp': int(time.time())
+            }
+            # 将岔路口加入栈，用于回溯
+            if position != self.start_position:  # 起始位置不入栈
+                self.intersection_stack.append(position)
+        
+        # 更新当前岔路口
+        self.last_intersection = position
+        # 清空当前路径记录，准备记录从岔路口出发的新路径
+        self.current_path_from_intersection = [position]
+    
+    def update_intersection_exploration(self, current_position: Tuple[int, int], action: str, success: bool):
+        """更新岔路口探索状态"""
+        if not self.last_intersection or self.last_intersection == current_position:
+            return
+            
+        # 从动作中提取方向
+        direction = self._extract_direction_from_action(action)
+        if not direction:
+            return
+            
+        intersection_data = self.intersection_memory.get(self.last_intersection)
+        if not intersection_data:
+            return
+            
+        # 记录已访问的方向
+        intersection_data['visited_directions'].add(direction)
+        intersection_data['unvisited_directions'].discard(direction)
+        
+        # 如果探索失败（撞墙），标记为死胡同方向
+        if not success:
+            # 这个方向是死路，但岔路口本身可能还有其他方向
+            pass
+        
+        # 记录从岔路口出发的路径
+        if current_position not in self.current_path_from_intersection:
+            self.current_path_from_intersection.append(current_position)
+    
+    def _extract_direction_from_action(self, action: str) -> str:
+        """从动作字符串中提取方向"""
+        action_lower = action.lower()
+        if 'up' in action_lower:
+            return 'up'
+        elif 'down' in action_lower:
+            return 'down'
+        elif 'left' in action_lower:
+            return 'left'
+        elif 'right' in action_lower:
+            return 'right'
+        return None
+    
+    def get_backtrack_target(self) -> Tuple[Tuple[int, int], List[Tuple[int, int]]]:
+        """获取回溯目标：返回要回溯到的岔路口位置和路径"""
+        if not self.intersection_stack:
+            return None, []
+            
+        # 从栈顶开始找，找到第一个还有未探索方向的岔路口
+        for i in range(len(self.intersection_stack) - 1, -1, -1):
+            intersection_pos = self.intersection_stack[i]
+            intersection_data = self.intersection_memory.get(intersection_pos)
+            
+            if intersection_data and intersection_data['unvisited_directions']:
+                # 找到有未探索方向的岔路口
+                return intersection_pos, intersection_data['path_from_intersection']
+        
+        return None, []
+    
+    def mark_intersection_dead_end(self, intersection_pos: Tuple[int, int]):
+        """标记岔路口为死胡同（所有方向都已探索且都是死路）"""
+        if intersection_pos in self.intersection_memory:
+            self.intersection_memory[intersection_pos]['is_dead_end'] = True
+            # 从栈中移除这个死胡同岔路口
+            if intersection_pos in self.intersection_stack:
+                self.intersection_stack.remove(intersection_pos)
     
     def _add_landmark(self, position: Tuple[int, int], landmark_type: str):
         """Add a landmark to spatial memory"""
@@ -417,6 +552,41 @@ class SpatialMemoryMap:
             self.position_features.pop(pos, None)
             self.position_values.pop(pos, None)
     
+    def get_intersection_context(self, position: Tuple[int, int]) -> Dict[str, Any]:
+        """获取当前位置的岔路口上下文信息"""
+        if position not in self.intersection_memory:
+            return {}
+            
+        intersection_data = self.intersection_memory[position]
+        backtrack_target, backtrack_path = self.get_backtrack_target()
+        
+        # 获取完整的岔路口栈信息，用于分析
+        intersection_stack_info = []
+        for i, pos in enumerate(self.intersection_stack):
+            if pos in self.intersection_memory:
+                data = self.intersection_memory[pos]
+                intersection_stack_info.append({
+                    'position': pos,
+                    'depth': i,
+                    'unvisited_count': len(data['unvisited_directions']),
+                    'visited_count': len(data['visited_directions']),
+                    'is_dead_end': data['is_dead_end']
+                })
+        
+        return {
+            'is_intersection': True,
+            'visited_directions': list(intersection_data['visited_directions']),
+            'unvisited_directions': list(intersection_data['unvisited_directions']),
+            'is_dead_end': intersection_data['is_dead_end'],
+            'path_from_intersection': intersection_data['path_from_intersection'],
+            'can_backtrack': backtrack_target is not None,
+            'backtrack_target': backtrack_target,
+            'total_intersections': len(self.intersection_memory),
+            'intersection_stack_size': len(self.intersection_stack),
+            'intersection_stack_details': intersection_stack_info,  # 详细的栈信息
+            'current_intersection_depth': intersection_stack_info[-1]['depth'] if intersection_stack_info else 0
+        }
+    
     def get_memory_summary(self) -> Dict[str, Any]:
         """Get a summary of spatial memory contents"""
         return {
@@ -427,7 +597,10 @@ class SpatialMemoryMap:
             'successful_paths': len(self.successful_paths),
             'failed_attempts': len(self.failed_attempts),
             'memory_usage': len(self.position_observations) / self.max_memory_size,
-            'coverage_percentage': (len(self.position_observations) / (self.grid_height * self.grid_width)) * 100
+            'coverage_percentage': (len(self.position_observations) / (self.grid_height * self.grid_width)) * 100,
+            'total_intersections': len(self.intersection_memory),
+            'intersection_stack_size': len(self.intersection_stack),
+            'backtrack_available': self.get_backtrack_target()[0] is not None
         }
     
     def export_memory_map(self) -> Dict[str, Any]:
