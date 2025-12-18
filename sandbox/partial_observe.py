@@ -404,7 +404,31 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
             
             # 更新空间记忆
             current_pos = info['current_position']
-            spatial_memory.update_observation(current_pos, visible_matrix, env.grid, symbols)
+            # 从可见矩阵中提取可见位置集合
+            visible_positions = set()
+            agent_y, agent_x = env.state.position
+            height, width = env.grid.shape
+            
+            # 计算可见区域的边界
+            visible_coords = [
+                (y, x) for y in range(height) for x in range(width)
+                if _is_visible_with_wall_check(env, (y, x), visibility)
+            ]
+            
+            if visible_coords:
+                min_y, max_y = min(p[0] for p in visible_coords), max(p[0] for p in visible_coords)
+                min_x, max_x = min(p[1] for p in visible_coords), max(p[1] for p in visible_coords)
+                
+                # 将矩阵坐标转换回全局坐标
+                for matrix_y in range(visible_matrix.shape[0]):
+                    for matrix_x in range(visible_matrix.shape[1]):
+                        global_y = min_y + matrix_y
+                        global_x = min_x + matrix_x
+                        # 检查该位置是否实际可见（不是被遮挡的？）
+                        if _is_visible_with_wall_check(env, (global_y, global_x), visibility):
+                            visible_positions.add((global_y, global_x))
+            
+            spatial_memory.update_observation(current_pos, maze_ascii, visible_positions, env.grid)
             
             # 获取空间上下文
             spatial_context = spatial_memory.get_spatial_context(current_pos)
@@ -808,7 +832,7 @@ def _format_spatial_context(spatial_context: dict) -> str:
     if spatial_context.get('recommended_actions'):
         lines.append("- Recommended exploration directions:")
         for action in spatial_context['recommended_actions'][:3]:  # 最多显示3个
-            lines.append(f"  * {action['direction']}: {action['reason']}")
+            lines.append(f"  * {action['action']}: {action['reason']}")
     
     # 当前位置评估
     if spatial_context.get('position_value') is not None:
