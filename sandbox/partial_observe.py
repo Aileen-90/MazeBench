@@ -381,7 +381,7 @@ def run_ai_sandbox_partial_observe(maze: str, model: str = None, max_steps: int 
     action_memory = []  # Action memory list, each element is {'action': str, 'feedback': str}
     
     # 初始化空间记忆地图
-    spatial_memory = SpatialMemoryMap(maze_shape=env.grid.shape)
+    spatial_memory = SpatialMemoryMap(grid_height=env.grid.shape[0], grid_width=env.grid.shape[1])
     
     print(f"Starting AI test (Partial Observe Mode) - Model: {model}, Max steps: {max_steps}, Memory length: {memory}, Visibility: {visibility}")
     print(f"Maze: {maze}")
