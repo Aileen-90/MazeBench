@@ -405,7 +405,7 @@ Symbol legend:
     success = env.state.done and not exploration_failed
     error = None
     if not success:
-        if env.state.steps >= max_steps:
+        if stats['api_calls'] >= max_steps:
             error = 'max_steps_exceeded'
         elif exploration_failed:
             error = 'exploration_failed'
