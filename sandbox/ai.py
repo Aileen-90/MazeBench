@@ -17,6 +17,8 @@ from adapters import get_adapter
 from utils.io import load_config, apply_env_keys
 import re
 import numpy as np
+from runners.image2d_runner import evaluate_image2d
+from runners.text2d_runner import evaluate_text2d
 
 
 def run_ai_sandbox(maze: str, model: str = None, max_steps: int = None, cfg: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -457,6 +459,32 @@ Symbol legend:
         'timestamp': time.time()
         # ===========================================
     }
+    
+    # ============ 新增：路径验证和相似度计算 ============
+    try:
+        # 构建迷宫字典用于验证
+        maze_dict = {
+            'grid': env.grid,
+            'start': env.start,
+            'goal': env.goal,
+            'shortest_path': env.shortest_path if hasattr(env, 'shortest_path') else []
+        }
+        
+        # 使用对应的runner进行验证
+        if cfg.get('maze_type', 'text') == 'image':
+            evaluation = evaluate_image2d(maze_dict, None, cfg)
+        else:
+            evaluation = evaluate_text2d(maze_dict, cfg)
+        
+        # 将验证结果添加到结果中
+        result['validation_result'] = evaluation.get('validation_result', {})
+        result['scores'] = evaluation.get('scores', {})
+        
+    except Exception as e:
+        print(f"  路径验证失败: {e}")
+        result['validation_result'] = {}
+        result['scores'] = {}
+    # ===========================================
 
     # Save results - updated save logic
     Path("outputs").mkdir(exist_ok=True)

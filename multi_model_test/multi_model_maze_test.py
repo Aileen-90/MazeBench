@@ -163,6 +163,12 @@ class MultiModelMazeTester:
                 'errors': result.get('stats', {}).get('errors', []),
                 'error_types': self._extract_error_types(result),
                 # =======================================
+                
+                # ============ 新增：路径相似度（重合度） ============
+                'path_similarity': result.get('validation_result', {}).get('path_similarity', 0),
+                'path_efficiency': result.get('validation_result', {}).get('efficiency', 0),
+                'optimal_length': result.get('validation_result', {}).get('optimal_length', 0),
+                # ===========================================
             }
 
             logger.info(f"测试完成: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - "
@@ -192,7 +198,10 @@ class MultiModelMazeTester:
                 'parse_errors': 0,
                 'error_count': 0,
                 'errors': [],
-                'error_types': {}
+                'error_types': {},
+                'path_similarity': 0,
+                'path_efficiency': 0,
+                'optimal_length': 0
             }
 
     def _extract_error_types(self, result: Dict[str, Any]) -> Dict[str, int]:
@@ -365,15 +374,23 @@ class MultiModelMazeTester:
             'trials_per_maze': self.trials_per_maze,
             'model_stats': {},
             'maze_size_stats': {},
-            'overall_stats': {}
+            'overall_stats': {},
+            'failure_type_stats': {}
         }
 
         # 按模型统计
         for model in self.models:
             model_results = [r for r in results if r['model'] == model]
             successful_tests = [r for r in model_results if r['success']]
+            failed_tests = [r for r in model_results if not r['success']]
             avg_steps = sum(r['steps'] for r in successful_tests) / len(successful_tests) if successful_tests else 0
             avg_api_calls = sum(r.get('api_calls', 0) for r in model_results) / len(model_results) if model_results else 0
+
+            # 失败类型统计（按模型）
+            failure_types = {}
+            for test in failed_tests:
+                error_type = test.get('error', 'unknown')
+                failure_types[error_type] = failure_types.get(error_type, 0) + 1
 
             summary['model_stats'][model] = {
                 'total_tests': len(model_results),
@@ -381,29 +398,48 @@ class MultiModelMazeTester:
                 'success_rate': len(successful_tests) / len(model_results) if model_results else 0,
                 'avg_steps_successful': avg_steps,
                 'avg_api_calls': avg_api_calls,
-                'failed_tests': len(model_results) - len(successful_tests)
+                'failed_tests': len(failed_tests),
+                'failure_types': failure_types
             }
 
         # 按迷宫大小统计
         for maze_size in self.maze_sizes:
             size_results = [r for r in results if r['maze_size'] == maze_size]
             successful_tests = [r for r in size_results if r['success']]
+            failed_tests = [r for r in size_results if not r['success']]
             avg_steps = sum(r['steps'] for r in successful_tests) / len(successful_tests) if successful_tests else 0
+
+            # 失败类型统计（按迷宫大小）
+            failure_types = {}
+            for test in failed_tests:
+                error_type = test.get('error', 'unknown')
+                failure_types[error_type] = failure_types.get(error_type, 0) + 1
 
             summary['maze_size_stats'][maze_size] = {
                 'total_tests': len(size_results),
                 'successful_tests': len(successful_tests),
                 'success_rate': len(successful_tests) / len(size_results) if size_results else 0,
                 'avg_steps_successful': avg_steps,
-                'failed_tests': len(size_results) - len(successful_tests)
+                'failed_tests': len(failed_tests),
+                'failure_types': failure_types
             }
 
         # 总体统计
         total_successful = sum(len([r for r in results if r['success'] and r['model'] == model]) for model in self.models)
+        total_failed = len(results) - total_successful
+        failed_tests = [r for r in results if not r['success']]
+
+        # 失败类型统计（总体）
+        overall_failure_types = {}
+        for test in failed_tests:
+            error_type = test.get('error', 'unknown')
+            overall_failure_types[error_type] = overall_failure_types.get(error_type, 0) + 1
+
         summary['overall_stats'] = {
             'total_successful': total_successful,
             'overall_success_rate': total_successful / len(results) if results else 0,
-            'total_failed': len(results) - total_successful
+            'total_failed': total_failed,
+            'failure_types': overall_failure_types
         }
 
         return summary
@@ -430,22 +466,43 @@ class MultiModelMazeTester:
             f.write("-" * 30 + "\n")
             for model, stats in summary['model_stats'].items():
                 f.write(f"{model}:\n")
-                f.write(".1f")
-                f.write(".1f")
-                f.write(f"  失败次数: {stats['failed_tests']}\n\n")
+                f.write(f"  总测试数: {stats['total_tests']}\n")
+                f.write(f"  成功次数: {stats['successful_tests']}\n")
+                f.write(f"  成功率: {stats['success_rate']:.2%}\n")
+                f.write(f"  平均步数(成功): {stats['avg_steps_successful']:.1f}\n")
+                f.write(f"  平均API调用: {stats['avg_api_calls']:.1f}\n")
+                f.write(f"  失败次数: {stats['failed_tests']}\n")
+                if stats['failure_types']:
+                    f.write("  失败类型分布:\n")
+                    for failure_type, count in stats['failure_types'].items():
+                        f.write(f"    - {failure_type}: {count}次\n")
+                f.write("\n")
 
             f.write("各迷宫大小统计:\n")
             f.write("-" * 30 + "\n")
             for size, stats in summary['maze_size_stats'].items():
                 f.write(f"{size} 迷宫:\n")
-                f.write(".1f")
-                f.write(".1f")
-                f.write(f"  失败次数: {stats['failed_tests']}\n\n")
+                f.write(f"  总测试数: {stats['total_tests']}\n")
+                f.write(f"  成功次数: {stats['successful_tests']}\n")
+                f.write(f"  成功率: {stats['success_rate']:.2%}\n")
+                f.write(f"  平均步数(成功): {stats['avg_steps_successful']:.1f}\n")
+                f.write(f"  失败次数: {stats['failed_tests']}\n")
+                if stats['failure_types']:
+                    f.write("  失败类型分布:\n")
+                    for failure_type, count in stats['failure_types'].items():
+                        f.write(f"    - {failure_type}: {count}次\n")
+                f.write("\n")
 
             f.write("总体统计:\n")
             f.write("-" * 30 + "\n")
-            f.write(".1f")
+            f.write(f"总成功数: {summary['overall_stats']['total_successful']}\n")
+            f.write(f"总体成功率: {summary['overall_stats']['overall_success_rate']:.2%}\n")
             f.write(f"总失败数: {summary['overall_stats']['total_failed']}\n")
+            if summary['overall_stats']['failure_types']:
+                f.write("失败类型分布:\n")
+                for failure_type, count in summary['overall_stats']['failure_types'].items():
+                    percentage = count / summary['overall_stats']['total_failed'] * 100 if summary['overall_stats']['total_failed'] > 0 else 0
+                    f.write(f"  - {failure_type}: {count}次 ({percentage:.1f}%)\n")
 
         logger.info(f"汇总报告已保存: {summary_json_path}, {summary_txt_path}")
 

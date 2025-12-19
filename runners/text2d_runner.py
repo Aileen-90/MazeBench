@@ -33,5 +33,6 @@ def evaluate_text2d(maze: dict, cfg: dict, adapter=None) -> dict:
         "scores": scores,
         "parsed_path": parsed.path,
         "model_output": model_output,
-        "maze_info": maze
+        "maze_info": maze,
+        "validation_result": vres  # 新增：包含路径相似度等验证结果
     }

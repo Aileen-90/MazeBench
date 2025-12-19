@@ -34,5 +34,6 @@ def evaluate_image2d(maze: dict, img_path: str, cfg: dict, adapter=None) -> dict
         "parsed_path": parsed.path,
         "model_output": model_output,
         "maze_info": maze,
-        "img_path": img_path
+        "img_path": img_path,
+        "validation_result": vres  # 新增：包含路径相似度等验证结果
     }

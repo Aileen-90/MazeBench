@@ -36,17 +36,22 @@ class Metrics:
             O = min(100, max(0, 100 * (optimal_length / path_length)))
         else:
             O = 100  # 如果没有最优路径信息，给满分
+        
+        # P: Path Similarity Score - 路径相似度评分（新增）
+        path_similarity = validation_result.get('path_similarity', 0)
+        P = min(100, max(0, 100 * path_similarity))
 
         # A: Accuracy Score - 综合准确性评分
-        A = (S + Q + O) / 3
+        A = (S + Q + O + P) / 4  # 现在包含路径相似度
 
-        # Total Score - 加权总分
-        total = 0.4 * S + 0.3 * Q + 0.3 * O
+        # Total Score - 加权总分（调整权重以包含路径相似度）
+        total = 0.3 * S + 0.25 * Q + 0.25 * O + 0.2 * P
 
         return {
             'total': round(total, 2),
             'S': S,
             'Q': Q,
             'O': round(O, 2),
+            'P': round(P, 2),  # 新增：路径相似度评分
             'A': round(A, 2)
         }

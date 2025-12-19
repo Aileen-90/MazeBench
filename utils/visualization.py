@@ -48,7 +48,7 @@ def create_maze_visualization_html(maze: Dict, model_path: List[List[int]],
     <div class="score">
         <h2>评分结果</h2>
         <p>总分: {scores.get('total', 0)}</p>
-        <p>S (成功): {scores.get('S', 0)} | Q (质量): {scores.get('Q', 0)} | R (合理性): {scores.get('R', 0)} | A (准确性): {scores.get('A', 0)}</p>
+        <p>S (成功): {scores.get('S', 0)} | Q (质量): {scores.get('Q', 0)} | O (最优性): {scores.get('O', 0)} | P (路径相似度): {scores.get('P', 0)} | A (准确性): {scores.get('A', 0)}</p>
         <p>迷宫大小: {len(grid)}x{len(grid[0])} | 起点: {start} | 终点: {goal}</p>
     </div>"""
 
@@ -138,7 +138,8 @@ def create_summary_visualization_html(results: List[Dict], output_path: str, tit
             <th>总分</th>
             <th>S</th>
             <th>Q</th>
-            <th>R</th>
+            <th>O</th>
+            <th>P</th>
             <th>A</th>
             <th>状态</th>
         </tr>"""
@@ -154,7 +155,8 @@ def create_summary_visualization_html(results: List[Dict], output_path: str, tit
             <td>{result['scores']['total']}</td>
             <td>{result['scores'].get('S', 0)}</td>
             <td>{result['scores'].get('Q', 0)}</td>
-            <td>{result['scores'].get('R', 0)}</td>
+            <td>{result['scores'].get('O', 0)}</td>
+            <td>{result['scores'].get('P', 0)}</td>
             <td>{result['scores'].get('A', 0)}</td>
             <td>{status}</td>
         </tr>"""
