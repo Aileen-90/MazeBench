@@ -23,8 +23,9 @@ def test_llama_model():
     
     print("使用的配置:")
     print(f"- 模型: {cfg['model']}")
-    print(f"- API基础URL: {cfg['OPENAI_API_BASE']}")
-    print(f"- API密钥: {'***' if cfg['OPENAI_API_KEY'] else 'None'}")
+    print(f"- 提供者: {cfg['PROVIDER']}")
+    print(f"- API基础URL: {cfg.get('base_url', cfg.get('OLLAMA_BASE_URL', None))}")
+    print(f"- API密钥: {'***' if cfg.get('OPENAI_API_KEY', None) else 'None'}")
     
     # 获取适配器
     adapter = get_adapter(cfg)

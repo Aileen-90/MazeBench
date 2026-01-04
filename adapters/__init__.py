@@ -34,7 +34,7 @@ def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
         return OllamaAdapter(
             model_name=model,
             temperature=temperature,
-            ollama_base_url=cfg.get('OLLAMA_BASE_URL', 'http://localhost:11434/v1')
+            ollama_base_url=cfg.get('OLLAMA_BASE_URL', cfg.get('base_url', 'http://localhost:11434/v1'))
         )
     elif provider == 'transformers':
         model = cfg.get('model', 'meta-llama/Llama-2-7b-chat-hf')
