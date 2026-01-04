@@ -157,7 +157,7 @@ class MultiModelMazeTester:
                 'timestamp': time.time(),
                 'result_file': result.get('result_file', None),
                 
-                # ============ 新增：统计字段 ============
+                # ============ 新增：统计字段 ============                
                 'api_calls': result.get('api_calls', 0),
                 'total_time': result.get('total_time', 0),
                 'wall_collisions': result.get('wall_collisions', 0),
@@ -166,6 +166,13 @@ class MultiModelMazeTester:
                 'error_count': result.get('error_count', 0),
                 'errors': result.get('stats', {}).get('errors', []),
                 'error_types': self._extract_error_types(result),
+                
+                # 新增：API响应时间指标
+                'avg_response_time': result.get('stats', {}).get('avg_response_time', 0),
+                'total_response_time': result.get('stats', {}).get('total_response_time', 0),
+                
+                # 新增：平均有效步数长度
+                'avg_valid_steps_length': self._calculate_avg_valid_steps_length(result),
                 # =======================================
             }
 
@@ -196,7 +203,14 @@ class MultiModelMazeTester:
                 'parse_errors': 0,
                 'error_count': 0,
                 'errors': [],
-                'error_types': {}
+                'error_types': {},
+                
+                # 新增：API响应时间指标（测试失败时为0）
+                'avg_response_time': 0,
+                'total_response_time': 0,
+                
+                # 新增：平均有效步数长度（测试失败时为0）
+                'avg_valid_steps_length': 0
             }
 
     def _extract_error_types(self, result: Dict[str, Any]) -> Dict[str, int]:
@@ -216,6 +230,57 @@ class MultiModelMazeTester:
             error_types[key] = error_types.get(key, 0) + 1
         
         return error_types
+        
+    def _calculate_avg_valid_steps_length(self, result: Dict[str, Any]) -> float:
+        """计算平均有效步数长度
+        
+        如果一次API调用没有error，记录移动path的长度，如果有错，记为0
+        """
+        history = result.get('stats', {}).get('history', [])
+        if not history:
+            return 0.0
+            
+        # 检查每步API调用是否有错误
+        error_steps = set()
+        errors = result.get('stats', {}).get('errors', [])
+        for error in errors:
+            error_steps.add(error.get('step', 0))
+            
+        valid_lengths = []
+        for step_info in history:
+            step = step_info.get('step', 0)
+            # 如果该步没有错误，计算移动路径长度
+            if step not in error_steps:
+                position_before = step_info.get('position_before')
+                position_after = step_info.get('position_after')
+                # 如果位置信息存在且不同，则计算步数
+                if position_before and position_after and position_before != position_after:
+                    # 检查路径中该步的移动距离
+                    path = result.get('path', [])
+                    if len(path) >= 2:
+                        # 查找该步在路径中的起始和结束位置
+                        try:
+                            start_idx = path.index(position_before)
+                            end_idx = path.index(position_after)
+                            if end_idx > start_idx:
+                                step_length = end_idx - start_idx
+                                valid_lengths.append(step_length)
+                            else:
+                                valid_lengths.append(1)  # 单步移动
+                        except ValueError:
+                            valid_lengths.append(1)  # 无法在路径中找到位置，假设为单步移动
+                    else:
+                        valid_lengths.append(1)  # 路径长度不足，假设为单步移动
+                else:
+                    valid_lengths.append(0)  # 位置相同，没有移动
+            else:
+                valid_lengths.append(0)  # 有错误，记为0
+                
+        if not valid_lengths:
+            return 0.0
+            
+        # 计算平均值，包含所有步数（包括无效移动）
+        return sum(valid_lengths) / len(valid_lengths)
 
 
 
