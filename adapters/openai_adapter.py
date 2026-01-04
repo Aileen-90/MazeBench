@@ -67,9 +67,9 @@ class OpenAIAdapter(BaseAdapter):
             model=self.model,
             messages=messages,
             max_tokens=1000,
-            temperature=self.temperature, 
+            temperature=self.temperature 
             # extra_body={"enable_thinking":True} # 百炼qwen3
-            thinking={"type":"enabled"} # 火山deepseek
+            # thinking={"type":"enabled"} # 火山deepseek
         )
         # completion = client.chat.completions.create(
         #     model="qwen-plus", # 选择模型

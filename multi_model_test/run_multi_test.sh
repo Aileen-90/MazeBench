@@ -5,10 +5,10 @@ echo "MazeBench 多模型迷宫测试"
 echo "=========================="
 
 # 设置默认参数
-MODELS="${MODELS:-doubao-seed-1-6-251015}"
-SIZES="${SIZES:-5x5,9x9,15x15}"
-TRIALS="${TRIALS:-10}"
-WORKERS="${WORKERS:-2}"
+MODELS="${MODELS:-deepseek-v3-2-251201}"
+SIZES="${SIZES:-17x17}"
+TRIALS="${TRIALS:-1}"
+WORKERS="${WORKERS:-10}"
 OUTPUT_DIR="${OUTPUT_DIR:-multi_model_results}"
 
 # 转换逗号分隔的字符串为数组

@@ -131,6 +131,10 @@ class MultiModelMazeTester:
 
             # Set adapter to use Ark
             cfg['PROVIDER'] = 'ark'
+            # if cfg.get('USE_OPENAI_SDK', False):
+            #     cfg['PROVIDER'] = 'openai'
+            # else:
+            #     cfg['PROVIDER'] = 'ark'
             
             # 运行AI沙盒测试 - 现在会返回完整的统计信息
             result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)

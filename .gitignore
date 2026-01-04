@@ -104,7 +104,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
+*env/
 venv/
 ENV/
 env.bak/
@@ -141,16 +141,20 @@ Thumbs.db
 # Project specific - MazeBench
 # 结果输出文件
 outputs/
-mazes/
+output*/
 *.log
 logs/
 temp/
 tmp/
+*results/
 
 # 敏感配置文件
 config/local.yaml
+config/local*
 
 # 生成的迷宫文件（如果需要保留特定版本，请注释掉）
+mazes_*/
+*maze/
 # mazes/generated_*.png
 # mazes/maze_*.json
 
@@ -158,3 +162,6 @@ config/local.yaml
 debug/
 test_results/
 .cache/
+*backup.py
+*_test.py
+*local/
