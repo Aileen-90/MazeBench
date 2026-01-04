@@ -129,12 +129,15 @@ class MultiModelMazeTester:
             dir_name = self._find_dir(maze_size)
             cfg['sandbox']['mazes_path'] = str(self.mazes_base_dir / dir_name) + "/"
 
-            # Set adapter to use Ark
-            cfg['PROVIDER'] = 'ark'
-            # if cfg.get('USE_OPENAI_SDK', False):
-            #     cfg['PROVIDER'] = 'openai'
-            # else:
-            #     cfg['PROVIDER'] = 'ark'
+            # 根据模型名称选择合适的PROVIDER
+            if model.startswith('llama') or model.startswith('mistral') or model.startswith('gemma'):
+                cfg['PROVIDER'] = 'ollama'
+                # 确保使用正确的Ollama配置
+                cfg['base_url'] = 'http://localhost:11434/v1'
+            elif cfg.get('USE_OPENAI_SDK', False):
+                cfg['PROVIDER'] = 'openai'
+            else:
+                cfg['PROVIDER'] = cfg.get('PROVIDER', 'ark')  # 默认使用配置中的PROVIDER或ark
             
             # 运行AI沙盒测试 - 现在会返回完整的统计信息
             result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
