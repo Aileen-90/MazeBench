@@ -1,10 +1,10 @@
-# Llama模型测试配置
+# Llama模型测试配置 - Ollama适配器
 # 支持环境变量覆盖，优先级：环境变量 > local.yaml > config.yaml
 
 # 模型配置
-model: "llama3-70b-instruct"  # Llama模型名称 (根据实际模型调整)
-OPENAI_API_KEY: "ollama"  # Ollama服务不需要API密钥，使用任意值即可
-OPENAI_API_BASE: "http://localhost:11434/v1"  # Ollama服务URL
+PROVIDER: "ollama"
+model: "llama3.1:70b-instruct"  # Llama模型名称 (根据实际模型调整)
+base_url: "http://localhost:11434/v1"  # Ollama服务URL
 
 temperature: 0.0  # 模型生成温度参数，控制随机性 (0.0-2.0)
 

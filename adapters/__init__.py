@@ -3,6 +3,8 @@ from .base import BaseAdapter
 from .openai_adapter import OpenAIAdapter
 from .azure_adapter import AzureAdapter
 from .ark_adapter import ArkAdapter
+from .transformers_adapter import TransformersAdapter
+from .ollama_adapter import OllamaAdapter
 
 def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
     """
@@ -26,6 +28,21 @@ def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
             api_base=cfg.get('ARK_API_BASE'),
             model=cfg.get('model', 'ark-model'),
             temperature=temperature
+        )
+    elif provider == 'ollama':
+        model = cfg.get('model', 'llama2')
+        return OllamaAdapter(
+            model_name=model,
+            temperature=temperature,
+            ollama_base_url=cfg.get('OLLAMA_BASE_URL', 'http://localhost:11434/v1')
+        )
+    elif provider == 'transformers':
+        model = cfg.get('model', 'meta-llama/Llama-2-7b-chat-hf')
+        return TransformersAdapter(
+            model_name=model,
+            temperature=temperature,
+            device_map=cfg.get('device_map', 'auto'),
+            max_new_tokens=cfg.get('max_new_tokens', 512)
         )
     else:  # 默认openai
         model = cfg.get('model', 'gpt-4')

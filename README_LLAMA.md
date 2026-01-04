@@ -41,11 +41,38 @@ ollama pull llama3.1:70b-instruct
 
 ### 2.1 使用提供的Llama配置
 
-我们已经创建了一个专门用于Llama测试的配置文件 `config/llama_config.yaml`，内容如下：
+我们已经创建了专门用于Llama测试的配置文件。现在支持两种方式运行Llama模型：
+
+#### 2.1.1 使用Ollama适配器（推荐）
+
+配置文件 `config/llama_config.yaml` 使用新的Ollama适配器：
 
 ```yaml
-# Llama模型测试配置
-model: "llama3-70b-instruct"  # Llama模型名称
+# Llama模型测试配置 - Ollama适配器
+PROVIDER: "ollama"
+model: "llama3.1:70b-instruct"  # Llama模型名称
+base_url: "http://localhost:11434/v1"  # Ollama服务URL
+
+temperature: 0.0
+mode: "text2d"
+output_dir: "outputs_llama/"
+mazes_path: "mazes/"
+
+sandbox:
+  enabled: true
+  max_steps: 50
+  memory: 10
+  visibility: -1
+```
+
+#### 2.1.2 使用OpenAI兼容模式（旧方式，兼容）
+
+如果需要兼容旧的配置方式，可以继续使用：
+
+```yaml
+# Llama模型测试配置 - OpenAI兼容模式
+PROVIDER: "openai"
+model: "llama3.1:70b-instruct"  # Llama模型名称
 OPENAI_API_KEY: "ollama"  # Ollama服务不需要API密钥，使用任意值即可
 OPENAI_API_BASE: "http://localhost:11434/v1"  # Ollama服务URL
 
@@ -119,7 +146,7 @@ Connection error.
 
 请检查：
 - Ollama服务是否正在运行（`ollama serve`）
-- 配置文件中的 `OPENAI_API_BASE` 是否正确（默认：http://localhost:11434/v1）
+- 配置文件中的 `base_url`（Ollama适配器）或 `OPENAI_API_BASE`（OpenAI兼容模式）是否正确（默认：http://localhost:11434/v1）
 - 网络是否有防火墙限制
 
 ### 4.2 模型未找到
@@ -136,7 +163,8 @@ Model not found.
 
 ### 4.3 API密钥错误
 
-Ollama服务不需要真实的API密钥，可以使用任意值：
+- **Ollama适配器**：不需要API密钥，配置中无需设置
+- **OpenAI兼容模式**：不需要真实的API密钥，可以使用任意值：
 
 ```yaml
 OPENAI_API_KEY: "ollama"  # 任意值都可以
@@ -162,11 +190,14 @@ sandbox:
 ## 6. 示例命令
 
 ```bash
-# 测试5x5迷宫
+# 测试5x5迷宫（使用Ollama适配器）
 python3 run_sandbox.py --mode ai --config config/llama_config.yaml --maze mazes/maze_5x5_0.json --model llama3.1:8b-instruct
 
-# 运行10x10迷宫测试
+# 运行10x10迷宫测试（使用Ollama适配器）
 python3 main.py --config config/llama_config.yaml --size 10x10 --count 3
+
+# 运行10x10迷宫测试（使用OpenAI兼容模式）
+python3 main.py --config config/llama_openai_config.yaml --size 10x10 --count 3
 ```
 
 ## 7. 查看结果

@@ -13,9 +13,12 @@
 ```
 mazebench/
 ├── adapters/          # 模型适配器层
-│   ├── base.py       # 适配器接口
-│   ├── openai_adapter.py
-│   └── azure_adapter.py
+│   ├── base.py                # 适配器接口
+│   ├── openai_adapter.py      # OpenAI API 适配器
+│   ├── azure_adapter.py       # Azure OpenAI API 适配器
+│   ├── transformers_adapter.py # Transformers 本地模型适配器
+│   ├── ollama_adapter.py      # Ollama 服务适配器
+│   └── ark_adapter.py         # ARK API 适配器
 ├── core/             # 核心算法层
 │   ├── config.py     # 配置类
 │   ├── generator.py  # 迷宫生成器
@@ -47,9 +50,43 @@ mazebench/
 pip install -r requirements.txt
 ```
 
-2. 配置API密钥：
+2. 模型配置：
+
+MazeBench 支持多种模型运行方式：
+
+#### 云服务模型 (OpenAI/Azure/ARK)
+
+配置 API 密钥（以 OpenAI 为例）：
+
 ```bash
 export OPENAI_API_KEY="your-api-key"
+```
+
+或在配置文件中设置：
+
+```yaml
+PROVIDER: "openai"
+OPENAI_API_KEY: "your-api-key"
+```
+
+#### 本地模型 (Transformers)
+
+直接使用 Hugging Face Transformers 加载本地模型：
+
+```yaml
+PROVIDER: "transformers"
+model: "meta-llama/Llama-2-7b-chat-hf"
+device_map: "auto"  # 自动检测 GPU
+```
+
+#### Ollama 服务
+
+通过 Ollama 服务运行本地模型：
+
+```yaml
+PROVIDER: "ollama"
+model: "llama3.1:8b-instruct"
+base_url: "http://localhost:11434/v1"
 ```
 
 3. 配置迷宫生成（可选）：
@@ -66,6 +103,12 @@ text2d:
 ```bash
 # 使用启动脚本（推荐）
 python run.py
+
+# 使用指定配置（本地模型示例）
+python run.py --config config/llama_local_config.yaml
+
+# 使用 Ollama 服务示例
+python run.py --config config/ollama_config.yaml
 
 # 或者作为模块运行
 python -m mazebench.main
@@ -200,6 +243,38 @@ curl http://localhost:5000/state
 - `config/local.yaml`：本地配置（覆盖主配置）
 
 支持通过环境变量设置敏感信息。
+
+### 模型配置
+
+```yaml
+# 模型提供者配置
+PROVIDER: "openai"  # 可选值: openai, azure, transformers, ollama, ark
+
+# OpenAI 适配器配置
+OPENAI_API_KEY: "your-api-key"
+model: "gpt-4"
+temperature: 0.0
+max_new_tokens: 1000
+
+# Azure OpenAI 适配器配置
+AZURE_OPENAI_KEY: "your-azure-key"
+AZURE_OPENAI_ENDPOINT: "your-azure-endpoint"
+AZURE_OPENAI_VERSION: "2023-05-15"
+
+# Transformers 本地模型配置
+# model: "meta-llama/Llama-2-7b-chat-hf"
+device_map: "auto"  # 自动检测 GPU
+load_in_4bit: false  # 4-bit 量化
+load_in_8bit: false  # 8-bit 量化
+
+# Ollama 适配器配置
+# model: "llama3.1:8b-instruct"
+base_url: "http://localhost:11434/v1"
+
+# ARK 适配器配置
+ARK_API_KEY: "your-ark-key"
+ARK_BASE_URL: "https://api.ark.com/v1"
+```
 
 ### 迷宫生成配置
 
