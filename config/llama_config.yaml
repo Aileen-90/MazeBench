@@ -1,0 +1,25 @@
+# Llama模型测试配置
+# 支持环境变量覆盖，优先级：环境变量 > local.yaml > config.yaml
+
+# 模型配置
+model: "llama3-70b-instruct"  # Llama模型名称 (根据实际模型调整)
+OPENAI_API_KEY: "ollama"  # Ollama服务不需要API密钥，使用任意值即可
+OPENAI_API_BASE: "http://localhost:11434/v1"  # Ollama服务URL
+
+temperature: 0.0  # 模型生成温度参数，控制随机性 (0.0-2.0)
+
+# 评测模式
+mode: "text2d"  # text2d 或 image2d
+
+# 输出配置
+output_dir: "outputs_llama/"  # Llama测试结果输出文件夹
+
+# 迷宫配置
+mazes_path: "mazes/"  # 迷宫数据路径
+
+# AI沙盒配置
+sandbox:
+  enabled: true  # 启用AI沙盒测试
+  max_steps: 50  # AI测试最大步数
+  memory: 10  # AI记忆长度
+  visibility: -1  # 可视范围：-1=看见全部地图
