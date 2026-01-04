@@ -477,6 +477,101 @@ class MultiModelMazeTester:
 
         return summary
 
+    def collect_and_save_statistics(self):
+        """
+        收集并统计所有测试结果，保存到result文件夹
+        """
+        import json
+        import os
+        from datetime import datetime
+        from pathlib import Path
+        from typing import Dict, List, Any
+        
+        logger.info("开始收集并统计测试结果...")
+        
+        # 创建result文件夹
+        result_dir = Path("result")
+        result_dir.mkdir(exist_ok=True)
+        
+        for maze_size in self.maze_sizes:
+            for model in self.models:
+                # 结果文件路径
+                results_dir = self.output_base_dir / maze_size / model
+                
+                if not results_dir.exists():
+                    logger.warning(f"未找到结果目录 {results_dir}")
+                    continue
+                
+                # 收集所有JSON文件
+                json_files = list(results_dir.glob("*.json"))
+                if not json_files:
+                    logger.warning(f"在 {results_dir} 中未找到JSON文件")
+                    continue
+                
+                logger.info(f"为 {model} {maze_size} 找到 {len(json_files)} 个测试结果文件")
+                
+                # 统计指标
+                total_tests = 0
+                successful_tests = 0
+                total_avg_response_time = 0
+                total_avg_valid_length = 0
+                
+                for file_path in json_files:
+                    total_tests += 1
+                    
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                        
+                        # 统计成功次数
+                        if data.get("success", False):
+                            successful_tests += 1
+                        
+                        # 统计平均API响应时间
+                        avg_response_time = data.get("avg_response_time", 0)
+                        total_avg_response_time += avg_response_time
+                        
+                        # 统计平均有效长度
+                        avg_valid_length = data.get("avg_valid_steps_length", 0)
+                        total_avg_valid_length += avg_valid_length
+                        
+                    except json.JSONDecodeError:
+                        logger.warning(f"无法解析文件 {file_path}")
+                        continue
+                    except Exception as e:
+                        logger.warning(f"处理文件 {file_path} 时出错: {str(e)}")
+                        continue
+                
+                # 计算平均值
+                avg_accuracy = successful_tests / total_tests if total_tests > 0 else 0
+                avg_of_avg_response_time = total_avg_response_time / total_tests if total_tests > 0 else 0
+                avg_of_avg_valid_length = total_avg_valid_length / total_tests if total_tests > 0 else 0
+                
+                # 构建结果字典
+                result = {
+                    "maze_size": maze_size,
+                    "model": model,
+                    "total_tests": total_tests,
+                    "successful_tests": successful_tests,
+                    "average_accuracy": round(avg_accuracy, 4),
+                    "average_of_avg_response_time": round(avg_of_avg_response_time, 4),
+                    "average_of_avg_valid_length": round(avg_of_avg_valid_length, 4),
+                    "statistics_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                
+                # 生成文件名：大小_模型_测试时间.json
+                model_name = model.replace(":", "-")  # 替换不允许的文件名字符
+                test_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                filename = f"{maze_size}_{model_name}_{test_time}.json"
+                filepath = result_dir / filename
+                
+                # 保存结果
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(result, f, ensure_ascii=False, indent=2)
+                
+                logger.info(f"统计结果已保存到: {filepath}")
+    
     def save_summary_report(self, summary: Dict[str, Any]):
         """保存汇总报告"""
         # 保存JSON格式的详细报告
@@ -621,6 +716,9 @@ python run_multi_test.py --models gpt-4 gpt-3.5-turbo --sizes 5x5 9x9 15x15 --tr
         print(f"{model}: 成功率 {stats['success_rate']:.2f}, 平均步数 {stats['avg_steps_successful']:.1f}, 平均API调用 {stats.get('avg_api_calls', 0):.1f}")
     print(f"\n总测试数: {summary.get('total_tests', 0)}")
     print(f"总体成功率: {summary.get('overall_stats', {}).get('overall_success_rate', 0):.2f}")
+    
+    # 收集并统计测试结果
+    tester.collect_and_save_statistics()
 
 
 if __name__ == '__main__':
