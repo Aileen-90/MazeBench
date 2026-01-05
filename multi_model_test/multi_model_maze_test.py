@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import time
+import psutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Dict, List, Any, Tuple
@@ -39,7 +40,7 @@ class MultiModelMazeTester:
 
     def __init__(self, models: List[str], maze_sizes: List[str], trials_per_maze: int = 10,
                  max_workers: int = 4, output_base_dir: str = "multi_model_results",
-                 mazes_base_dir: str = None):
+                 mazes_base_dir: str = None, batch_size: int = 25, retry_count: int = 2):
         """
         初始化测试器
 
@@ -50,12 +51,17 @@ class MultiModelMazeTester:
             max_workers: 最大并发线程数
             output_base_dir: 结果输出基础目录
             mazes_base_dir: 迷宫父目录（默认从配置文件读取或使用 'mazes'）
+            batch_size: 批量提交任务的大小
+            retry_count: 失败任务的重试次数
         """
         self.models = models
         self.maze_sizes = maze_sizes
         self.trials_per_maze = trials_per_maze
-        self.max_workers = max_workers
+        # 根据Kaggle环境优化线程数
+        self.max_workers = min(max_workers, os.cpu_count() or 4, 8)  # Kaggle通常限制CPU资源
         self.output_base_dir = Path(output_base_dir)
+        self.batch_size = batch_size
+        self.retry_count = retry_count
 
         # 加载基础配置
         self.base_cfg = load_config()
@@ -74,8 +80,118 @@ class MultiModelMazeTester:
         # 创建输出目录
         self.output_base_dir.mkdir(exist_ok=True)
 
-        logger.info(f"初始化多模型测试器: {len(models)}个模型, {len(maze_sizes)}种迷宫大小, 每迷宫{trials_per_maze}次测试, 迷宫目录: {self.mazes_base_dir}")
+        logger.info(f"初始化多模型测试器: {len(models)}个模型, {len(maze_sizes)}种迷宫大小, 每迷宫{trials_per_maze}次测试, 迷宫目录: {self.mazes_base_dir}, 最大线程数: {self.max_workers}")
         self.size_to_dir = {}  # 缓存尺寸到实际目录名的映射
+
+    def run_all_tests(self) -> Dict[str, Any]:
+        """运行所有测试"""
+        # 获取可用迷宫
+        mazes_by_size = self.get_available_mazes()
+        if not mazes_by_size:
+            logger.error("未找到任何可用迷宫")
+            return {}
+
+        # 收集所有测试任务
+        all_tasks = []
+        for maze_size, maze_names in mazes_by_size.items():
+            for maze_name in maze_names:
+                for model in self.models:
+                    for trial_id in range(self.trials_per_maze):
+                        all_tasks.append((model, maze_size, maze_name, trial_id))
+
+        logger.info(f"总共需要运行 {len(all_tasks)} 个测试任务")
+
+        # 使用多线程执行测试
+        results = []
+        completed_count = 0
+
+        # 批量处理任务，避免一次性提交过多任务
+        for batch_start in range(0, len(all_tasks), self.batch_size):
+            batch_end = min(batch_start + self.batch_size, len(all_tasks))
+            batch_tasks = all_tasks[batch_start:batch_end]
+            
+            logger.info(f"处理批次 {batch_start//self.batch_size + 1}/{(len(all_tasks) + self.batch_size - 1)//self.batch_size}, 任务数: {len(batch_tasks)}")
+            
+            # 检查内存使用情况
+            self._check_memory_usage()
+            
+            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                # 提交当前批次任务
+                future_to_task = {
+                    executor.submit(self._run_task_with_retry, task_info): task_info
+                    for task_info in batch_tasks
+                }
+
+                # 收集结果
+                for future in as_completed(future_to_task):
+                    task_info = future_to_task[future]
+                    model, maze_size, maze_name, trial_id = task_info
+
+                    try:
+                        result = future.result()
+                        if result:
+                            results.append(result)
+
+                            # 保存结果文件
+                            result_file = self.save_test_result(result)
+                            logger.info(f"结果已保存: {result_file}")
+
+                    except Exception as e:
+                        logger.error(f"任务执行失败（包括重试） {task_info}: {e}")
+                        # 添加最终错误结果
+                        error_result = {
+                            'model': model,
+                            'maze_size': maze_size,
+                            'maze_name': maze_name,
+                            'trial_id': trial_id,
+                            'success': False,
+                            'steps': 0,
+                            'total_steps': 0,
+                            'error': str(e),
+                            'timestamp': time.time(),
+                            'result_file': None
+                        }
+                        results.append(error_result)
+
+                    completed_count += 1
+                    if completed_count % 10 == 0:
+                        logger.info(f"进度: {completed_count}/{len(all_tasks)} ({completed_count/len(all_tasks)*100:.1f}%)")
+
+        # 生成汇总报告
+        summary = self.generate_summary_report(results)
+        self.save_summary_report(summary)
+
+        logger.info("所有测试完成！")
+        return summary
+
+    def _run_task_with_retry(self, task_info):
+        """带重试机制的任务执行"""
+        model, maze_size, maze_name, trial_id = task_info
+        
+        for attempt in range(self.retry_count + 1):
+            try:
+                result = self.run_single_test(model, maze_size, maze_name, trial_id)
+                return result
+            except Exception as e:
+                if attempt < self.retry_count:
+                    wait_time = 2 ** attempt  # 指数退避
+                    logger.warning(f"任务 {task_info} 执行失败 (尝试 {attempt + 1}/{self.retry_count + 1}): {e}, 将在 {wait_time} 秒后重试...")
+                    time.sleep(wait_time)
+                else:
+                    raise
+
+    def _check_memory_usage(self):
+        """检查内存使用情况，避免OOM错误"""
+        process = psutil.Process()
+        mem_info = process.memory_info()
+        mem_used_gb = mem_info.rss / (1024 * 1024 * 1024)
+        
+        logger.info(f"内存使用情况: {mem_used_gb:.2f} GB")
+        
+        # 如果内存使用超过80%，适当暂停
+        if mem_used_gb > 9.0:  # Kaggle通常提供16GB内存
+            logger.warning(f"内存使用较高 ({mem_used_gb:.2f} GB)，暂停10秒...")
+            time.sleep(10)
 
     def _find_dir(self, size: str) -> str:
         """查找匹配尺寸的目录名，支持模糊匹配"""
@@ -288,54 +404,6 @@ class MultiModelMazeTester:
 
 
 
-    # def run_single_test(self, model: str, maze_size: str, maze_name: str, trial_id: int) -> Dict[str, Any]:
-    #     """运行单个测试"""
-    #     logger.info(f"开始测试: 模型={model}, 迷宫={maze_size}/{maze_name}, 尝试={trial_id+1}")
-
-    #     try:
-    #         # 创建模型特定的配置
-    #         cfg = self.base_cfg.copy()
-    #         cfg['model'] = model
-
-    #         # 设置迷宫路径
-    #         cfg['sandbox'] = cfg.get('sandbox', {})
-    #         cfg['sandbox']['mazes_path'] = f"mazes_{maze_size}/"
-
-    #         # 运行AI沙盒测试
-    #         result = run_ai_sandbox(maze_name, model, cfg.get('sandbox', {}).get('max_steps', 50), cfg)
-
-    #         test_result = {
-    #             'model': model,
-    #             'maze_size': maze_size,
-    #             'maze_name': maze_name,
-    #             'trial_id': trial_id,
-    #             'success': result.get('success', False),
-    #             'steps': result.get('steps', 0),
-    #             'total_steps': len(result.get('path', [])),
-    #             'error': result.get('error', None),
-    #             'timestamp': time.time(),
-    #             'result_file': result.get('result_file', None)
-    #         }
-
-    #         logger.info(f"测试完成: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - 成功={test_result['success']}, 步数={test_result['steps']}")
-
-    #         return test_result
-
-    #     except Exception as e:
-    #         logger.error(f"测试失败: {model}/{maze_size}/{maze_name} 尝试{trial_id+1} - {e}")
-    #         return {
-    #             'model': model,
-    #             'maze_size': maze_size,
-    #             'maze_name': maze_name,
-    #             'trial_id': trial_id,
-    #             'success': False,
-    #             'steps': 0,
-    #             'total_steps': 0,
-    #             'error': str(e),
-    #             'timestamp': time.time(),
-    #             'result_file': None
-    #         }
-
     def save_test_result(self, result: Dict[str, Any]) -> str:
         """保存单个测试结果到文件"""
         model = result['model']
@@ -353,48 +421,6 @@ class MultiModelMazeTester:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         return str(filepath)
-
-    def run_all_tests(self) -> Dict[str, Any]:
-        """运行所有测试"""
-        # 获取可用迷宫
-        mazes_by_size = self.get_available_mazes()
-        if not mazes_by_size:
-            logger.error("未找到任何可用迷宫")
-            return {}
-
-        # 收集所有测试任务
-        all_tasks = []
-        for maze_size, maze_names in mazes_by_size.items():
-            for maze_name in maze_names:
-                for model in self.models:
-                    for trial_id in range(self.trials_per_maze):
-                        all_tasks.append((model, maze_size, maze_name, trial_id))
-
-        logger.info(f"总共需要运行 {len(all_tasks)} 个测试任务")
-
-        # 使用多线程执行测试
-        results = []
-        completed_count = 0
-
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            # 提交所有任务
-            future_to_task = {
-                executor.submit(self.run_single_test, model, maze_size, maze_name, trial_id): (model, maze_size, maze_name, trial_id)
-                for model, maze_size, maze_name, trial_id in all_tasks
-            }
-
-            # 收集结果
-            for future in as_completed(future_to_task):
-                task_info = future_to_task[future]
-                model, maze_size, maze_name, trial_id = task_info
-
-                try:
-                    result = future.result()
-                    results.append(result)
-
-                    # 保存结果文件
-                    result_file = self.save_test_result(result)
-                    logger.info(f"结果已保存: {result_file}")
 
                 except Exception as e:
                     logger.error(f"任务执行失败 {task_info}: {e}")

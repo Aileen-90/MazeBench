@@ -7,7 +7,7 @@ echo "=========================="
 # 设置默认参数
 MODELS="${MODELS:-llama3:8b}"
 SIZES="${SIZES:-5x5}"
-TRIALS="${TRIALS:-1}"
+TRIALS="${TRIALS:-5}"
 WORKERS="${WORKERS:-10}"
 OUTPUT_DIR="${OUTPUT_DIR:-multi_model_results}"
 

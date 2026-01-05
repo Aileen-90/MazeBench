@@ -3,7 +3,7 @@
 
 # 模型配置
 model: "gpt-4"  # 使用的模型名称
-temperature: 0.0  # 模型生成温度参数，控制随机性 (0.0-2.0)
+temperature: 0.1  # 模型生成温度参数，控制随机性 (0.0-2.0)
 OPENAI_API_KEY: null  # OpenAI API密钥，可通过环境变量设置
 OPENAI_API_BASE: null  # OpenAI API基础URL，可选
 
