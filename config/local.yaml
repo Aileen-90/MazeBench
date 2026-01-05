@@ -1,3 +1,3 @@
 PROVIDER: "ollama"
-model: "llama2:7b"  # Llama模型名称 (根据实际模型调整)
+model: "llama3:7b"  # Llama模型名称 (根据实际模型调整)
 base_url: "http://localhost:11434/v1"  # Ollama服务URL

@@ -30,7 +30,7 @@ def get_adapter(cfg: dict, image: bool = False) -> BaseAdapter:
             temperature=temperature
         )
     elif provider == 'ollama':
-        model = cfg.get('model', 'llama2')
+        model = cfg.get('model', 'llama3')
         return OllamaAdapter(
             model_name=model,
             temperature=temperature,

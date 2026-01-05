@@ -10,7 +10,7 @@ import httpx
 from .base import BaseAdapter
 
 class OllamaAdapter(BaseAdapter):
-    def __init__(self, model_name: str = "llama2", temperature: float = 0.1, ollama_base_url: str = "http://localhost:11434/v1"):
+    def __init__(self, model_name: str = "llama3", temperature: float = 0.1, ollama_base_url: str = "http://localhost:11434/v1"):
         """
         初始化Ollama适配器
         

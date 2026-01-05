@@ -5,7 +5,7 @@ echo "MazeBench 多模型迷宫测试"
 echo "=========================="
 
 # 设置默认参数
-MODELS="${MODELS:-llama2:7b}"
+MODELS="${MODELS:-llama3:7b}"
 SIZES="${SIZES:-5x5}"
 TRIALS="${TRIALS:-1}"
 WORKERS="${WORKERS:-10}"
