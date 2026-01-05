@@ -422,27 +422,6 @@ class MultiModelMazeTester:
 
         return str(filepath)
 
-                except Exception as e:
-                    logger.error(f"任务执行失败 {task_info}: {e}")
-                    # 添加错误结果
-                    error_result = {
-                        'model': model,
-                        'maze_size': maze_size,
-                        'maze_name': maze_name,
-                        'trial_id': trial_id,
-                        'success': False,
-                        'steps': 0,
-                        'total_steps': 0,
-                        'error': str(e),
-                        'timestamp': time.time(),
-                        'result_file': None
-                    }
-                    results.append(error_result)
-
-                completed_count += 1
-                if completed_count % 10 == 0:
-                    logger.info(f"进度: {completed_count}/{len(all_tasks)} ({completed_count/len(all_tasks)*100:.1f}%)")
-
         # 生成汇总报告
         summary = self.generate_summary_report(results)
         self.save_summary_report(summary)
