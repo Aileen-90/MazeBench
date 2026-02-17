@@ -4,32 +4,73 @@ import json
 from pathlib import Path
 from typing import Dict, List, Any
 
-def load_config(cfg_path='config/config.yaml') -> Dict[str, Any]:
+def load_config(cfg_path=None) -> Dict[str, Any]:
     """
     加载项目主配置，并合并本地配置，返回dict。
+    
+    Args:
+        cfg_path: 配置文件路径，如果为None则自动查找
     """
-    path = Path(cfg_path)
-    if not path.exists():
+    if cfg_path is None:
+        # 自动查找配置文件
+        possible_paths = [
+            Path('config/config.yaml'),
+            Path(__file__).parent.parent / 'config/config.yaml',
+            Path('mazebenchmark/config/config.yaml'),
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                cfg_path = str(path)
+                break
+        else:
+            # 如果没有找到配置文件，使用默认配置
+            cfg_path = None
+    
+    if cfg_path is None:
         # 默认配置
         config = {
             'model': 'gpt-4',
             'mode': 'text2d',
-            'mazes_path': 'mazes/',
+            'sandbox': {
+                'max_steps': 50,
+                'visibility': 3,
+                'memory': 5,
+                'mazes_path': 'mazes/',
+                'symbols': {
+                    'wall': '█',
+                    'path': ' ',
+                    'start': 'S',
+                    'goal': 'G',
+                    'agent': 'A',
+                    'masked': '?'
+                }
+            },
             'output_path': 'outputs/results.json',
             'OPENAI_API_KEY': None,
             'OPENAI_API_BASE': None,
         }
     else:
+        path = Path(cfg_path)
+        if not path.exists():
+            raise FileNotFoundError(f"配置文件不存在: {cfg_path}")
+        
         with open(path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f) or {}
 
     # 合并本地配置
-    local_path = Path('config/local.yaml')
-    if local_path.exists():
-        with open(local_path, 'r', encoding='utf-8') as f:
-            local_config = yaml.safe_load(f) or {}
-            # 本地配置覆盖主配置
-            config.update(local_config)
+    local_paths = [
+        Path('config/local.yaml'),
+        Path(__file__).parent.parent / 'config/local.yaml',
+    ]
+    
+    for local_path in local_paths:
+        if local_path.exists():
+            with open(local_path, 'r', encoding='utf-8') as f:
+                local_config = yaml.safe_load(f) or {}
+                # 本地配置覆盖主配置
+                config.update(local_config)
+            break
 
     return config
 
