@@ -25,14 +25,14 @@ output_dir: "outputs_15x15/"  # 结果输出文件夹
 generate_mazes: True  # 是否生成新的迷宫数据
 mazes_path: "mazes/"  # 迷宫数据路径（JSON/YAML文件或目录）如果不生成新的迷宫
 # 注意，测试时会使用目录中的所有迷宫
-maze_output_dir: "mazes_15x15/"  # 迷宫生成输出目录 如果生成新的迷宫
-maze_count: 5  # 生成的迷宫数量
-run_evaluation: True  # 是否运行评测（设置为False可以只生成迷宫，不进行测试）
+maze_output_dir: "mazes/29x29"  # 迷宫生成输出目录 如果生成新的迷宫
+maze_count: 3  # 生成的迷宫数量
+run_evaluation: False  # 是否运行评测（设置为False可以只生成迷宫，不进行测试）
 
 # 文本迷宫配置
 # 如果不生成新的迷宫，则下面的配置都无效，评测会使用mazes_path路径下的迷宫数据
 text2d:
-  size: "15x15"  # 迷宫尺寸 (height x width)
+  size: "29x29"  # 迷宫尺寸 (height x width)
   seed: 42  # 随机种子
   start_goal: "corner"  # 起点终点位置: "corner" 或 "random"
   algorithm: "dfs"  # 生成算法: "dfs" 或 "prim"
@@ -52,7 +52,7 @@ log_file: "outputs/mazebench.log"  # 日志文件路径，可选
 # AI沙盒配置
 sandbox:
   enabled: true  # 启用AI沙盒测试
-  max_steps: 50  # AI测试最大步数
+  max_steps: 20  # AI测试最大步数
   memory: 10  # AI记忆长度（最近k次动作），0=无记忆，-1=全部记忆
   visibility: -1  # 可视范围：0=只能看见自己位置，-1=看见全部地图，正数=可视范围
   max_no_exploration_steps: 20  # 连续未探索新区域的最大API调用次数

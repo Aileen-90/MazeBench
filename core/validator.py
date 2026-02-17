@@ -64,11 +64,46 @@ class MazeValidator:
         # 计算路径效率指标
         path_length = len(path) - 1  # 步数
         optimal_length = len(self.shortest_path) - 1 if self.shortest_path else 0
+        
+        # 计算路径相似度（重合度）
+        path_similarity = self._calculate_path_similarity(path)
 
         return {
             'ok': True,
             'path_length': path_length,
             'optimal_length': optimal_length,
             'efficiency': optimal_length / path_length if path_length > 0 else 0,
+            'path_similarity': path_similarity,  # 新增：路径相似度
             'error': None
         }
+
+    def _calculate_path_similarity(self, model_path: List[Tuple[int, int]]) -> float:
+        """计算模型路径与最短路径的相似度（重合度）"""
+        if not self.shortest_path or not model_path:
+            return 0.0
+        
+        # 转换为集合以便计算交集
+        model_path_set = set(model_path)
+        shortest_path_set = set(self.shortest_path)
+        
+        # 计算交集和并集
+        intersection = model_path_set.intersection(shortest_path_set)
+        union = model_path_set.union(shortest_path_set)
+        
+        # 使用Jaccard相似度：交集大小 / 并集大小
+        if len(union) == 0:
+            return 0.0
+            
+        jaccard_similarity = len(intersection) / len(union)
+        
+        # 同时考虑路径长度的比例
+        model_length = len(model_path)
+        optimal_length = len(self.shortest_path)
+        
+        # 如果模型路径过长，降低相似度
+        length_penalty = min(1.0, optimal_length / model_length if model_length > 0 else 1.0)
+        
+        # 综合相似度：Jaccard相似度 * 长度惩罚
+        final_similarity = jaccard_similarity * length_penalty
+        
+        return round(final_similarity, 4)

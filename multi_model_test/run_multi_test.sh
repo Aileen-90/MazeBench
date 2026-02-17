@@ -1,14 +1,16 @@
 #!/bin/bash
 # MazeBench 多模型迷宫测试运行脚本
+# python multi_model_test/multi_model_maze_test.py --models deepseek-v3-2-251201 --sizes 27x27 --trials 3 --workers 10 --output-dir multi_model_results
 
 echo "MazeBench 多模型迷宫测试"
 echo "=========================="
 
 # 设置默认参数
-MODELS="${MODELS:-doubao-seed-1-6-251015}"
-SIZES="${SIZES:-5x5,9x9,15x15}"
-TRIALS="${TRIALS:-10}"
-WORKERS="${WORKERS:-2}"
+# MODELS="${MODELS:-deepseek-r1-250528}"
+MODELS="${MODELS:-deepseek-v3-2-251201}"
+SIZES="${SIZES:-29x29}"
+TRIALS="${TRIALS:-3}"
+WORKERS="${WORKERS:-10}"
 OUTPUT_DIR="${OUTPUT_DIR:-multi_model_results}"
 
 # 转换逗号分隔的字符串为数组

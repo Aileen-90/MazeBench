@@ -146,6 +146,8 @@ mazes/
 logs/
 temp/
 tmp/
+multi_model_results/
+multi_model_results_local/
 
 # 敏感配置文件
 config/local.yaml
@@ -164,3 +166,21 @@ analysis/
 multi_model_results/
 test_outputs/
 call_api.py
+benchmark_results/
+my_local/
+output_history/
+pre_gen_maze/
+maze-env/
+*backup.py
+*prepare
+api_test.py
+mazes_11x11/maze_11x11_0.json
+mazes_19x19/maze_19x19_0.json
+mazes_29x29/maze_29x29_0.json
+mazes_15x15_imagepreview
+deepseek-v3-2-thinking-partial_observe_results /
+config/local_my.yaml
+hints*
+mem*
+*results
+part*/
